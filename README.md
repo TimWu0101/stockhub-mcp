@@ -6,7 +6,7 @@ A unified MCP server for market data across:
 - China A-shares
 - Hong Kong stocks
 - Funds
-- Futures
+- Futures1
 
 ## Goals
 
@@ -35,6 +35,10 @@ A unified MCP server for market data across:
 ## Project status
 
 Planning and architecture phase.
+
+## Quick note
+
+This repository is currently being bootstrapped and validated for local development workflow.
 
 ## Repository
 
