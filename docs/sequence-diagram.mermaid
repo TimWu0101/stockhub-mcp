@@ -1,0 +1,239 @@
+sequenceDiagram
+    actor Client as AI Client
+    participant Tool as Tool Function
+    participant Std as SymbolStandardizer
+    participant Detector as MarketDetector
+    participant CacheMid as CacheMiddleware
+    participant CacheStore as CacheStore
+    participant CachePolicy as CachePolicy
+    participant Session as MarketSessionDetector
+    participant Router as SourceRouter
+    participant CB as CircuitBreaker
+    participant TX as TencentSource
+    participant Sina as SinaSource
+    participant Builder as ResponseBuilder
+
+    %% ── Flow 1: get_realtime_quote (Cache Miss → Source Success, 盘中全清) ──
+    rect rgb(240, 248, 255)
+        Note over Client,Builder: Flow 1: get_realtime_quote("600519") — 盘中连续竞价 → 先清空全部缓存 → 回源成功
+
+        Client->>Tool: get_realtime_quote(symbol="600519", bypass_cache=false)
+        Tool->>Std: standardize("600519", preferred_market=None)
+        Std->>Detector: detect("600519")
+        Detector-->>Std: Market.CN
+        Std-->>Tool: StandardSymbol(market=CN, code="600519")
+
+        Tool->>Session: detect(Market.CN)
+        Session-->>Tool: MarketSession.CONTINUOUS (盘中)
+
+        Tool->>CacheMid: try_read(key, bypass=false)
+        CacheMid->>CachePolicy: get_policy(CN, CONTINUOUS)
+        CachePolicy-->>CacheMid: should_cache=false (盘中：先清空全部缓存，不写缓存)
+        CacheMid->>CacheStore: clear() 清空全部缓存
+        CacheStore-->>CacheMid: done
+        CacheMid-->>Tool: None (cache miss, 缓存已全清)
+
+        Tool->>Router: fetch_with_fallback(CN, fetch_fn)
+        Router->>CB: is_available("tx")
+        CB-->>Router: true
+
+        Router->>TX: fetch_quote(StandardSymbol(CN, "600519"))
+        TX-->>Router: QuoteData(price=1680.50, ...)
+
+        Router->>CB: record_success("tx")
+        Router-->>Tool: (QuoteData, source="tx", fallback_used=false)
+
+        Tool->>CacheMid: try_write(key, data, quality="live", bypass=false)
+        CacheMid->>CachePolicy: get_policy(CN, CONTINUOUS)
+        CachePolicy-->>CacheMid: should_cache=false (盘中不写缓存)
+        CacheMid-->>Tool: skipped
+
+        Tool->>Builder: ok(data=QuoteData, meta=Meta(source="tx", market_session="continuous", ...))
+        Builder-->>Tool: UnifiedResponse(success=true, cache={hit:false,...})
+        Tool-->>Client: Response
+    end
+
+    %% ── Flow 2: get_realtime_quote (Cache Hit) ──
+    rect rgb(255, 248, 240)
+        Note over Client,Builder: Flow 2: get_realtime_quote("600519") — Cache Hit (收盘后)
+
+        Client->>Tool: get_realtime_quote(symbol="600519", bypass_cache=false)
+        Tool->>Std: standardize("600519", None)
+        Std-->>Tool: StandardSymbol(CN, "600519")
+
+        Tool->>Session: detect(Market.CN)
+        Session-->>Tool: MarketSession.POST_CLOSE
+
+        Tool->>CacheMid: try_read(key, bypass=false)
+        CacheMid->>CachePolicy: get_policy(CN, POST_CLOSE)
+        CachePolicy-->>CacheMid: should_cache=true, policy="cn_post_close_until_next_trading_day_0900"
+        CacheMid->>CacheStore: get(key)
+        CacheStore-->>CacheMid: CacheEntry(data=QuoteData, cached_at=..., expires_at=...)
+
+        CacheMid-->>Tool: CacheEntry (hit!)
+        Tool->>Builder: ok(data=cached_quote, meta=Meta(..., cache={hit:true, ttl_remaining:61200, ...}))
+        Builder-->>Tool: UnifiedResponse
+        Tool-->>Client: Response (cached)
+    end
+
+    %% ── Flow 3: get_realtime_quote (Source Timeout → Fallback) ──
+    rect rgb(255, 240, 240)
+        Note over Client,Builder: Flow 3: get_realtime_quote("600519") — Tencent Timeout → Sina Fallback
+
+        Client->>Tool: get_realtime_quote(symbol="600519", bypass_cache=true)
+        Tool->>Std: standardize("600519", None)
+        Std-->>Tool: StandardSymbol(CN, "600519")
+
+        Tool->>Router: fetch_with_fallback(CN, fetch_fn)
+        Router->>CB: is_available("tx")
+        CB-->>Router: true
+
+        Router->>TX: fetch_quote(...)
+        TX--xRouter: httpx.TimeoutException
+
+        Router->>CB: record_failure("tx")
+        Note over CB: failure_count += 1
+
+        Router->>CB: is_available("sina")
+        CB-->>Router: true
+
+        Router->>Sina: fetch_quote(StandardSymbol(CN, "600519"))
+        Sina-->>Router: QuoteData(price=1680.30, ...)
+
+        Router-->>Tool: (QuoteData, source="sina", fallback_used=true)
+
+        Tool->>Builder: ok(data=QuoteData, meta=Meta(source="sina", fallback_used=true, quality_flag="fallback"))
+        Note over Builder: 附加 warning: FALLBACK_SOURCE_USED
+
+        Builder-->>Tool: UnifiedResponse(success=true, warnings=[FALLBACK_SOURCE_USED])
+        Tool-->>Client: Response (with fallback warning)
+    end
+
+    %% ── Flow 4: get_batch_quotes ──
+    rect rgb(240, 255, 240)
+        Note over Client,Builder: Flow 4: get_batch_quotes(["AAPL","600519","00700"]) — 逐Symbol独立缓存
+
+        Client->>Tool: get_batch_quotes(symbols=["AAPL","600519","00700"])
+        Tool->>Std: standardize("AAPL", None)
+        Std-->>Tool: StandardSymbol(US, "AAPL")
+        Tool->>Std: standardize("600519", None)
+        Std-->>Tool: StandardSymbol(CN, "600519")
+        Tool->>Std: standardize("00700", None)
+        Std-->>Tool: StandardSymbol(HK, "00700")
+
+        par AAPL (US) — check cache
+            Tool->>CacheMid: try_read(key_AAPL_US, bypass=false)
+            CacheMid->>CacheStore: get(key_AAPL_US)
+            CacheStore-->>CacheMid: CacheEntry (hit)
+            CacheMid-->>Tool: cached QuoteData
+        and 600519 (CN) — check cache
+            Tool->>CacheMid: try_read(key_600519_CN, bypass=false)
+            CacheMid-->>Tool: None (miss)
+        and 00700 (HK) — check cache
+            Tool->>CacheMid: try_read(key_00700_HK, bypass=false)
+            CacheMid-->>Tool: None (miss)
+        end
+
+        Note over Tool: 600519 + 00700 分别按市场路由回源
+
+        Tool->>Router: fetch_with_fallback(CN, ...) for 600519
+        Router-->>Tool: (QuoteData, source="tx", fallback_used=false)
+        Tool->>Router: fetch_with_fallback(HK, ...) for 00700
+        Router-->>Tool: (QuoteData, source="yfinance", fallback_used=false)
+
+        Tool->>Builder: ok(data=BatchQuoteResult(quotes=[AAPL(cached),600519,00700], failed_symbols=[]), ...)
+        Note over Builder: 每个 quote 独立附带 cache 字段:<br/>AAPL→{hit:true}, 600519→{hit:false}, 00700→{hit:false}
+
+        Builder-->>Tool: UnifiedResponse
+        Tool-->>Client: Batch Response
+    end
+
+    %% ── Flow 5: get_technical_indicators ──
+    rect rgb(248, 240, 255)
+        Note over Client,Builder: Flow 5: get_technical_indicators("600519", indicators=["MA","MACD"])
+
+        Client->>Tool: get_technical_indicators(symbol="600519", period="3mo", interval="1d", indicators=["MA","MACD"])
+        Tool->>Std: standardize("600519", None)
+        Std-->>Tool: StandardSymbol(CN, "600519")
+
+        Note over Tool: Step 1: 获取历史K线（不经缓存）
+        Tool->>Router: fetch_with_fallback(CN, fetch_history_fn)
+        Router->>TX: fetch_history(StandardSymbol(CN,"600519"), period="3mo", interval="1d", adjust="qfq")
+        TX-->>Router: HistoryData(history=[...22条K线...])
+        Router-->>Tool: (HistoryData, source="tx", fallback_used=false)
+
+        Note over Tool: Step 2: 本地计算技术指标
+        Tool->>Tool: df = pd.DataFrame(history)
+        Tool->>Tool: ComputedSource.compute_indicators(df, ["MA","MACD"])
+
+        Tool->>Builder: ok(data=IndicatorResults(indicators={MA:{...}, MACD:{...}}), meta=Meta(source="computed"))
+        Builder-->>Tool: UnifiedResponse
+        Tool-->>Client: Indicator Response
+    end
+
+    %% ── Flow 6: clear_quote_cache ──
+    rect rgb(255, 255, 240)
+        Note over Client,Builder: Flow 6: clear_quote_cache(scope="symbol", market="CN", symbol="600519")
+
+        Client->>Tool: clear_quote_cache(scope="symbol", market="CN", symbol="600519", tool="get_realtime_quote", dry_run=false)
+        Tool->>Tool: 校验: scope 合法, symbol 存在
+
+        Tool->>CacheStore: delete_by_pattern("quote:get_realtime_quote:CN:*:600519:*")
+        CacheStore-->>Tool: deleted_count=3
+
+        Tool->>Builder: ok(data=ClearCacheResult(scope="symbol", matched_count=3, deleted_count=3))
+        Builder-->>Tool: UnifiedResponse
+        Tool-->>Client: Clear Cache Response
+    end
+
+    %% ── Flow 7: FALLBACK_EXHAUSTED ──
+    rect rgb(255, 230, 230)
+        Note over Client,Builder: Flow 7: 所有数据源耗尽 → FALLBACK_EXHAUSTED
+
+        Client->>Tool: get_realtime_quote(symbol="600519")
+
+        Tool->>Router: fetch_with_fallback(CN, fetch_fn)
+
+        Router->>CB: is_available("tx")
+        CB-->>Router: true
+        Router->>TX: fetch_quote(...)
+        TX--xRouter: Timeout
+        Router->>CB: record_failure("tx")
+
+        Router->>CB: is_available("sina")
+        CB-->>Router: true
+        Router->>Sina: fetch_quote(...)
+        Sina--xRouter: ConnectionError
+        Router->>CB: record_failure("sina")
+
+        Router-->>Tool: raises FallbackExhaustedError(attempted=["tx","sina"])
+
+        Tool->>Builder: fail(ErrorDetail(code="FALLBACK_EXHAUSTED", type="source_error", retryable=true))
+        Builder-->>Tool: UnifiedResponse(success=false, error={...})
+        Tool-->>Client: Error Response
+    end
+
+    %% ── Flow 8: get_source_status ──
+    rect rgb(240, 255, 250)
+        Note over Client,Builder: Flow 8: get_source_status()
+
+        Client->>Tool: get_source_status()
+        Tool->>Router: get_all_status()
+
+        par Check Tencent
+            Router->>TX: health_check()
+            TX-->>Router: SourceHealth(name="tx", status="available", ...)
+        and Check Sina
+            Router->>Sina: health_check()
+            Sina-->>Router: SourceHealth(name="sina", status="available", ...)
+        and Check EastMoney
+            Router->>Router: health_check("eastmoney")
+            Note over Router: (check EB state + ping)
+            Router-->>Router: SourceHealth(name="eastmoney", status="available", ...)
+        end
+
+        Router-->>Tool: [SourceHealth(tx), SourceHealth(sina), SourceHealth(eastmoney), SourceHealth(yfinance)]
+        Tool->>Builder: ok(data=SourceStatusResult(sources=[...]))
+        Builder-->>Tool: UnifiedResponse
+        Tool-->>Client: Source Status Response
+    end

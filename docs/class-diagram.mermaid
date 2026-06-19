@@ -1,0 +1,499 @@
+classDiagram
+    direction TB
+
+    %% ── Enums ──
+    class Market {
+        <<enumeration>>
+        CN
+        HK
+        US
+    }
+
+    class MarketSession {
+        <<enumeration>>
+        pre_opening
+        continuous
+        lunch_break
+        auction
+        post_close
+        closed
+        unknown
+    }
+
+    class Source {
+        <<enumeration>>
+        yfinance
+        tx
+        sina
+        eastmoney
+        akshare
+        computed
+    }
+
+    class QualityFlag {
+        <<enumeration>>
+        live
+        delayed
+        stale
+        fallback
+        fallback_low_confidence
+        estimated
+        computed
+    }
+
+    class AdjustType {
+        <<enumeration>>
+        none
+        qfq
+        hfq
+    }
+
+    class InstrumentType {
+        <<enumeration>>
+        stock
+        index
+        etf
+        fund
+    }
+
+    class SourceStatus {
+        <<enumeration>>
+        available
+        degraded
+        unavailable
+    }
+
+    class ErrorType {
+        <<enumeration>>
+        input_error
+        business_error
+        source_error
+        system_error
+    }
+
+    class CacheScope {
+        <<enumeration>>
+        symbol
+        market
+        tool
+        all
+    }
+
+    %% ── Response Models ──
+    class UnifiedResponse {
+        +success: bool
+        +data: Optional~dict~
+        +meta: Meta
+        +warnings: list~Warning~
+        +error: Optional~ErrorDetail~
+        +partial_success: Optional~bool~
+        +cache: Optional~CacheInfo~
+        +static success(data, meta)$ UnifiedResponse
+        +static error(error_detail, meta)$ UnifiedResponse
+        +static partial_success(data, warnings, meta)$ UnifiedResponse
+    }
+
+    class Meta {
+        +request_id: str
+        +market: str
+        +symbol: str
+        +source: str
+        +currency: str
+        +timezone: str
+        +market_session: str
+        +is_realtime: bool
+        +data_delay_seconds: int
+        +quality_flag: str
+        +fallback_used: bool
+        +responded_at: str
+    }
+
+    class Warning {
+        +code: str
+        +message: str
+        +details: Optional~dict~
+    }
+
+    class ErrorDetail {
+        +code: str
+        +type: str
+        +message: str
+        +retryable: bool
+        +details: Optional~dict~
+    }
+
+    class CacheInfo {
+        +hit: bool
+        +expires_at: str
+        +ttl_remaining: int
+        +cached_at: str
+        +policy: str
+        +bypass_cache: bool
+    }
+
+    %% ── Data Models ──
+    class QuoteData {
+        +symbol: str
+        +name: str
+        +market: str
+        +price: float
+        +change: float
+        +change_pct: float
+        +open: float
+        +high: float
+        +low: float
+        +prev_close: float
+        +volume: int
+        +turnover: float
+        +timestamp: str
+        +instrument_type: str
+    }
+
+    class BatchQuoteResult {
+        +quotes: list~QuoteData~
+        +failed_symbols: list~str~
+        +summary: dict
+    }
+
+    class HistoryData {
+        +symbol: str
+        +market: str
+        +period: str
+        +interval: str
+        +adjust: str
+        +count: int
+        +history: list~KLineItem~
+    }
+
+    class KLineItem {
+        +date: str
+        +open: float
+        +high: float
+        +low: float
+        +close: float
+        +volume: int
+        +turnover: float
+        +change_pct: float
+    }
+
+    class IndicatorResults {
+        +symbol: str
+        +adjusted: str
+        +indicators: dict
+    }
+
+    class SectorData {
+        +sectors: list~SectorItem~
+    }
+
+    class SectorItem {
+        +code: str
+        +name: str
+        +type: str
+        +change_pct: float
+        +leading_stock: str
+        +leading_stock_name: str
+        +leading_stock_change_pct: float
+        +stock_count: int
+    }
+
+    class CapitalFlowData {
+        +scope: str
+        +timestamp: str
+        +main_net_inflow: float
+        +super_large_net_inflow: float
+        +large_net_inflow: float
+        +medium_net_inflow: float
+        +small_net_inflow: float
+    }
+
+    class SearchResult {
+        +symbol: str
+        +name: str
+        +display_name: str
+        +market: str
+        +exchange: str
+        +instrument_type: str
+        +currency: str
+    }
+
+    class SourceHealth {
+        +name: str
+        +status: str
+        +market_coverage: list~str~
+        +last_checked: str
+        +failures_in_window: int
+        +degraded_since: Optional~str~
+    }
+
+    class CalendarData {
+        +market: str
+        +from_date: str
+        +to_date: str
+        +total_days: int
+        +trading_days: int
+        +holidays: list~HolidayItem~
+        +next_trading_day: str
+    }
+
+    class HolidayItem {
+        +date: str
+        +name: str
+        +type: str
+    }
+
+    class ClearCacheResult {
+        +scope: str
+        +matched_count: int
+        +deleted_count: int
+        +dry_run: bool
+        +filters: dict
+    }
+
+    %% ── Symbol Layer ──
+    class StandardSymbol {
+        +market: Market
+        +code: str
+        +full_symbol() str
+    }
+
+    class SymbolStandardizer {
+        -detector: MarketDetector
+        +standardize(user_input, preferred_market) StandardSymbol
+        +to_source_format(standard, source) str
+        +from_source_format(raw, source, market) StandardSymbol
+    }
+
+    class MarketDetector {
+        +detect(user_input) Optional~Market~
+        +is_ambiguous(user_input) bool
+    }
+
+    class SymbolResolver {
+        -sources: list~BaseSource~
+        +search(query, market, type, max_results) list~SearchResult~
+        +resolve(user_input, preferred_market) StandardSymbol
+    }
+
+    class SymbolAdapters {
+        +to_yfinance(market, code)$ str
+        +to_tencent(market, code)$ str
+        +to_sina(market, code)$ str
+        +to_eastmoney(market, code)$ str
+    }
+
+    %% ── Market Module ──
+    class TradingCalendar {
+        +is_trading_day(market, date) bool
+        +get_next_trading_day(market, from_date) date
+        +get_holidays(market, from_date, to_date) list~HolidayItem~
+        +get_trading_days(market, from_date, to_date) list~date~
+    }
+
+    class MarketSessionDetector {
+        -calendar: TradingCalendar
+        +detect(market, dt) MarketSession
+        +is_critical_window(market, dt) bool
+    }
+
+    class MarketTimezone {
+        +get_timezone(market)$ str
+        +get_currency(market)$ str
+        +now_in_market(market)$ datetime
+    }
+
+    %% ── Source Layer ──
+    class BaseSource {
+        <<abstract>>
+        +name: Source
+        +supported_markets: list~Market~
+        +circuit_breaker: CircuitBreaker
+        +fetch_quote(symbol, market)* QuoteData
+        +fetch_history(symbol, market, period, interval, adjust)* HistoryData
+        +search(query, market, type, max_results)* list~SearchResult~
+        +health_check()* SourceHealth
+        +supports_market(market) bool
+        +to_source_symbol(standard) str*
+    }
+
+    class YFinanceSource {
+        +name = yfinance
+        +supported_markets = [US, HK]
+        +fetch_quote(symbol, market) QuoteData
+        +fetch_history(symbol, market, period, interval, adjust) HistoryData
+        +search(query, market, type, max_results) list~SearchResult~
+        +health_check() SourceHealth
+        +to_source_symbol(standard) str
+    }
+
+    class TencentSource {
+        +name = tx
+        +supported_markets = [CN]
+        +fetch_quote(symbol, market) QuoteData
+        +fetch_history(symbol, market, period, interval, adjust) HistoryData
+        +search(query, market, type, max_results) list~SearchResult~
+        +health_check() SourceHealth
+        +to_source_symbol(standard) str
+    }
+
+    class SinaSource {
+        +name = sina
+        +supported_markets = [CN]
+        +fetch_quote(symbol, market) QuoteData
+        +health_check() SourceHealth
+        +to_source_symbol(standard) str
+    }
+
+    class EastMoneySource {
+        +name = eastmoney
+        +supported_markets = [CN]
+        +fetch_sector_boards(type) SectorData
+        +fetch_capital_flow(scope) CapitalFlowData
+        +search(query, market, type, max_results) list~SearchResult~
+        +health_check() SourceHealth
+        +to_source_symbol(standard) str
+    }
+
+    class ComputedSource {
+        +name = computed
+        +compute_indicators(df, indicators) IndicatorResults
+        +compute_ma(df, periods) dict
+        +compute_ema(df, periods) dict
+        +compute_rsi(df, periods) dict
+        +compute_macd(df) dict
+        +compute_boll(df) dict
+        +compute_kdj(df) dict
+    }
+
+    class SourceRouter {
+        -sources: dict~Market~list~BaseSource~~
+        -circuit_breakers: dict~Source~CircuitBreaker~
+        +register(market, source, priority)
+        +fetch_with_fallback(market, fetch_fn) tuple~data,source,fallback_used~
+        +get_all_status() list~SourceHealth~
+        +get_source(market, name) BaseSource
+    }
+
+    class CircuitBreaker {
+        -name: str
+        -failure_count: int
+        -failure_window: timedelta
+        -cooldown_period: timedelta
+        -degraded_since: Optional~datetime~
+        -last_checked: datetime
+        -recent_failures: list~datetime~
+        +record_success()
+        +record_failure()
+        +status() SourceStatus
+        +is_available() bool
+        +reset()
+    }
+
+    %% ── Cache Layer ──
+    class CachePolicy {
+        -session_detector: MarketSessionDetector
+        -calendar: TradingCalendar
+        +get_policy(market, session) CachePolicyResult
+        +should_cache(market, session) bool
+        +compute_expiry(market, session, now) tuple~str,datetime~
+    }
+
+    class CachePolicyResult {
+        +policy_name: str
+        +should_cache: bool
+        +expiry_type: str
+        +ttl_seconds: Optional~int~
+        +expires_at: Optional~datetime~
+    }
+
+    class CacheStore {
+        -store: OrderedDict
+        -max_size: int
+        +get(key) Optional~CacheEntry~
+        +set(key, data, expires_at)
+        +delete(key)
+        +delete_by_pattern(pattern) int
+        +clear()
+        +stats() dict
+    }
+
+    class CacheEntry {
+        +data: dict
+        +cached_at: datetime
+        +expires_at: datetime
+        +policy: str
+        +is_expired(now) bool
+        +ttl_remaining(now) int
+    }
+
+    class CacheMiddleware {
+        -store: CacheStore
+        -policy: CachePolicy
+        -session_detector: MarketSessionDetector
+        +build_key(tool, market, type, symbol, source) str
+        +try_read(key, bypass) Optional~CacheEntry~
+        +try_write(key, data, quality, bypass) bool
+        +wrap(tool_fn) callable
+    }
+
+    class CacheCleaner {
+        -store: CacheStore
+        +clear(scope, filters) ClearCacheResult
+        +dry_run(scope, filters) ClearCacheResult
+        -build_pattern(scope, filters) str
+    }
+
+    %% ── Utils ──
+    class ResponseBuilder {
+        +static ok(data, meta)$ UnifiedResponse
+        +static fail(error, meta)$ UnifiedResponse
+        +static partial(data, warnings, meta)$ UnifiedResponse
+    }
+
+    class ErrorFactory {
+        +static symbol_not_found(symbol)$ ErrorDetail
+        +static ambiguous_symbol(symbol, candidates)$ ErrorDetail
+        +static source_timeout(source)$ ErrorDetail
+        +static fallback_exhausted(market, attempted)$ ErrorDetail
+        +static invalid_period(period)$ ErrorDetail
+        +static market_not_supported(market)$ ErrorDetail
+        +static internal_error(msg)$ ErrorDetail
+        +static build_warning(code, message, details)$ Warning
+    }
+
+    %% ── Relationships ──
+    UnifiedResponse --> Meta : contains
+    UnifiedResponse --> Warning : contains
+    UnifiedResponse --> ErrorDetail : contains
+    UnifiedResponse --> CacheInfo : contains
+
+    BatchQuoteResult --> QuoteData : contains
+    HistoryData --> KLineItem : contains
+    SectorData --> SectorItem : contains
+    CalendarData --> HolidayItem : contains
+
+    BaseSource <|-- YFinanceSource : implements
+    BaseSource <|-- TencentSource : implements
+    BaseSource <|-- SinaSource : implements
+    BaseSource <|-- EastMoneySource : implements
+
+    BaseSource --> CircuitBreaker : has
+    SourceRouter --> BaseSource : manages
+    SourceRouter --> CircuitBreaker : manages
+
+    SymbolStandardizer --> MarketDetector : uses
+    SymbolStandardizer --> StandardSymbol : produces
+    SymbolStandardizer --> SymbolAdapters : uses
+    SymbolResolver --> BaseSource : queries
+
+    MarketSessionDetector --> TradingCalendar : uses
+
+    CacheMiddleware --> CacheStore : uses
+    CacheMiddleware --> CachePolicy : uses
+    CacheMiddleware --> MarketSessionDetector : uses
+    CacheMiddleware --> CacheEntry : produces
+    CachePolicy --> MarketSessionDetector : uses
+    CachePolicy --> TradingCalendar : uses
+    CachePolicy --> CachePolicyResult : produces
+    CacheCleaner --> CacheStore : uses
+    CacheCleaner --> ClearCacheResult : produces

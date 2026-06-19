@@ -1,45 +1,77 @@
 # Market Data MCP
 
-A unified MCP server for market data across:
+一个面向 AI 的统一金融数据 MCP 服务器，目标覆盖：
 
-- US stocks
-- China A-shares
-- Hong Kong stocks
-- Funds
-- Futures1
+- 美股
+- A股
+- 中国香港股票
+- 公募基金与 ETF
+- 期货
+- 宏观与政策上下文
 
-## Goals
+## 项目目标
 
-- Zero-config for most users
-- Free data sources first
-- AI-friendly unified schema
-- Open-source friendly architecture
+- 默认零配置可用
+- 优先使用免费数据源、公开接口与开源方案
+- 付费数据源只作为可选增强
+- 返回统一 schema，方便 AI 消费
+- 采用适合开源维护的工程结构
 
-## Data source strategy
+## 数据源策略
 
-- China market free sources inspired by leek-fund
-- yfinance for US/HK stocks, history, and fundamentals
-- Optional Tushare enhancement for A-shares
-- Local indicator calculation with pandas/numpy
+- 中国市场免费源参考 leek-fund 的公开接口思路
+- 美股 / 中国香港历史与基本面优先使用 yfinance
+- AkShare 作为中国市场的免费兜底与增强层
+- A股可选 Tushare 增强，但不作为默认前提
+- 技术指标通过 pandas / numpy 本地计算
 
-## Planned v0.1 scope
+## 版本路线摘要
 
-- Realtime quotes
-- Price history
-- Technical indicators
-- Sector boards and capital flow
-- Symbol search
-- Fund quotes
-- Market news
+- V0.1：实时行情、历史 K 线、技术指标、板块、资金流、标的搜索、交易日历、源健康检查
+- V0.2：中国市场增强版，补充基金、ETF、期货、南北向资金、龙虎榜、涨跌停、停牌查询
+- V0.3：研究与上下文版，补充基本面、估值分位、期权链、宏观、政策与新闻层
+- V0.4：组合与风险分析
+- V1.0：测试、文档、配置、发布打磨
+- V1.1：主闭环完成后的能力补强版
 
-## Project status
+详细规划见 `docs/roadmap.md`。
 
-Planning and architecture phase.
+## 借鉴与引用仓库
 
-## Quick note
+已整理单独清单，见 `docs/referenced-repos.md`，方便后续回查我们分析和借鉴过的 GitHub 仓库。
 
-This repository is currently being bootstrapped and validated for local development workflow.
+## Skill 参考分析
 
-## Repository
+已整理桌面 `mcp开发辅助/skills` 目录中的 skill 分析，见 `docs/skills-analysis.md`，用于回查哪些接口、能力和架构思路值得被 `market-data-mcp` 借鉴。
+
+## Skill / 仓库映射清单
+
+已整理 `docs/skills-to-market-data-mcp-mapping.md`，用于快速查看 skill / 仓库 -> 可用接口 -> 对应工具 -> 版本归属 -> 是否免费 -> 风险限制 的映射关系。
+
+## 动态缓存策略
+
+已整理 `docs/cache-strategy.md`，用于定义价格类查询在不同市场时段下的正式缓存策略：A股与中国香港股票优先采用绝对过期时间，并显式避开午休/竞价/收市竞价等关键交易切换窗口；美股继续使用基于美东交易时段的保守短 TTL；同时补充调用方主动清缓存能力设计，以控制重复调用带来的额度消耗并支持显式刷新。
+
+## 闭环与容错设计
+
+已整理 `docs/error-model.md`，用于定义统一错误码、partial success、warning、质量标记和容错结构。
+
+## 专家复核笔记
+
+已整理 `docs/expert-review-notes.md`，从股票研究、市场语义、数据一致性和 AI 调用体验角度补充遗漏项与优化建议，并标记这些建议是否已同步回填到对应版本。
+
+## V0.1 Schema 定义
+
+已整理 `docs/v0.1-schema.md`，统一定义所有 V0.1 工具的入参、返回结构、通用字段、枚举值、缓存元信息和错误模型速查，作为后续实现的基准。
+
+## 开发总进度记录
+
+已整理 `docs/development-status.md`，用于跟踪各版本、各工具与基础设施的真实开发状态，并强制记录证据、验收标准和最近更新，防止只写状态不落实。
+
+## 当前状态
+
+目前处于方案与架构整理阶段。
+
+## 仓库
 
 GitHub: https://github.com/TimWu0101/market-data-mcp
