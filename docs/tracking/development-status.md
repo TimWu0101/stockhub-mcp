@@ -71,7 +71,7 @@
 - **数据源+缓存 (T03)**：已完成（11 文件，5 源 + 路由 + 熔断 + FIFO 缓存，IS_PASS: YES）
 - **核心工具实现 (T04+T05)**：已完成（7 文件 + server.py，10 工具全部注册，IS_PASS: YES）
 - **QA 测试**：已完成（严过关，193/193 PASSED，0 源码 Bug，6 测试文件）
-- **对外可运行 MCP 服务**：已验证（WorkBuddy 接入 market-data MCP，10 工具全部可调用）
+- **对外可运行 MCP 服务**：已验证（WorkBuddy 接入 stockhub MCP，10 工具全部可调用）
 - **实机 MCP 验证**：已完成（茅台/伊利/AAPL 查询 + 批量 + 指标 + 缓存全部通过）
 - **Bug 修复**：已完成 4 项（batch.py symbol 传递 / eastmoney NoneType / sector 涨幅除 100 / indicators NaN dropna / yfinance MultiIndex）
 

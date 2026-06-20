@@ -1,4 +1,4 @@
-"""FastMCP application entry-point for market-data-mcp.
+"""FastMCP application entry-point for stockhub-mcp.
 
 Start with:  fastmcp dev src/stockhub_mcp/server.py
 """
@@ -14,7 +14,7 @@ from stockhub_mcp.utils.logging import configure_logging
 # ---------------------------------------------------------------------------
 configure_logging()
 
-mcp = FastMCP("market-data-mcp")
+mcp = FastMCP("stockhub-mcp")
 
 # ---------------------------------------------------------------------------
 # Lazy-init singletons (created on first use to avoid import-time errors)

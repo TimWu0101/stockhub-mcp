@@ -1,4 +1,4 @@
-"""All enumerations used across the market-data-mcp project.
+"""All enumerations used across the stockhub-mcp project.
 
 Shared by models, sources, cache layer, and tools.
 """

@@ -1,4 +1,4 @@
-"""Unified logging configuration for market-data-mcp.
+"""Unified logging configuration for stockhub-mcp.
 
 All log output goes to stderr; no file logging in V0.1.
 """

@@ -1,4 +1,4 @@
-"""BaseDataSource: abstract base class for all market-data sources.
+"""BaseDataSource: abstract base class for all stockhub sources.
 
 Every data source (Tencent, Sina, Yahoo Finance, EastMoney, AkShare)
 must implement this interface.
