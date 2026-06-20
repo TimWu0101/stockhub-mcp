@@ -78,8 +78,6 @@ pip install efinance
 }
 ```
 
-Claude Desktop：`~/Library/Application Support/Claude/claude_desktop_config.json`
-
 ---
 
 ## 使用示例
