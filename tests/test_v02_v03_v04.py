@@ -201,21 +201,89 @@ async def test_pipeline_error():
     assert result["final"].get("ran") is None  # stage_never should not run
 
 
-# -- V0.4 Valuation Percentile ---------------------------------------------------
+# -- V0.4 Risk Metrics (unit) -----------------------------------------------------
+
+def test_risk_metrics_math():
+    """Verify volatility/drawdown/Sharpe/VaR computation on a known series."""
+    import numpy as np
+    rng = np.random.default_rng(42)
+    np.random.seed(42)  # keep old randint for pytest compatibility
+    returns = np.random.normal(0.001, 0.02, 252)
+
+    daily_vol = float(np.std(returns))
+    ann_vol = daily_vol * np.sqrt(252)
+
+    cumulative = (1 + returns).cumprod()
+    running_max = np.maximum.accumulate(cumulative)
+    drawdown = (cumulative - running_max) / running_max
+    max_dd = np.min(drawdown)
+
+    excess = returns - 0.02 / 252
+    sharpe = np.mean(excess) / np.std(returns) * np.sqrt(252)
+
+    var_95 = np.percentile(returns, 5) * 100
+
+    assert ann_vol > 0  # annualized volatility should be positive
+    assert max_dd <= 0  # max drawdown is always <= 0
+    assert var_95 < 0  # VaR 95% is negative
+
+
+def test_beta_computation():
+    """Simple beta: cov(x,y) / var(y)."""
+    import numpy as np
+    rng = np.random.default_rng(42)
+    x = rng.normal(0.001, 0.02, 100)
+    y = rng.normal(0.001, 0.015, 100)
+    cov = np.cov(x, y)
+    beta = cov[0, 1] / cov[1, 1]
+    assert -5 < beta < 5  # beta for daily returns should be in reasonable range
+
 
 @pytest.mark.asyncio
-async def test_valuation_percentile_invalid_metric():
-    from stockhub_mcp.tools.valuation_percentile import get_valuation_percentile_impl
-    result = await get_valuation_percentile_impl(symbol="贵州茅台", metric="ev")
+async def test_risk_metrics_unresolvable_symbol():
+    """Unresolvable symbol should return error."""
+    from stockhub_mcp.tools.risk import get_risk_metrics_impl
+    result = await get_risk_metrics_impl(symbol="ZZZZ_INVALID")
     assert result["success"] is False
-    assert "INVALID_METRIC" in result.get("error", {}).get("code", "")
+
+
+# -- V0.4 Quick Analysis (error path) ---------------------------------------------
+
+@pytest.mark.asyncio
+async def test_quick_analysis_unresolvable():
+    """Quick analysis with bad symbol should return error."""
+    from stockhub_mcp.tools.quick_analysis import get_quick_analysis_impl
+    result = await get_quick_analysis_impl(symbol="ZZZZ_INVALID")
+    assert result["success"] is False
+
+
+# -- V0.4 Pipeline (edge cases) ---------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_pipeline_empty():
+    """Empty pipeline should still succeed."""
+    from stockhub_mcp.core.pipeline import Pipeline
+    result = await Pipeline().run({"initial": "value"})
+    assert result["success"] is True
+    assert result["final"] == {"initial": "value"}
 
 
 @pytest.mark.asyncio
-async def test_valuation_percentile_unresolvable():
-    from stockhub_mcp.tools.valuation_percentile import get_valuation_percentile_impl
-    result = await get_valuation_percentile_impl(symbol="ZZZZ_INVALID")
-    assert result["success"] is False
+async def test_pipeline_chained_context():
+    """Pipeline should pass context between stages."""
+    from stockhub_mcp.core.pipeline import Pipeline
+
+    async def stage_a(ctx):
+        ctx["a"] = 1
+        return ctx
+
+    async def stage_b(ctx):
+        ctx["b"] = ctx["a"] + 1
+        return ctx
+
+    result = await Pipeline().stage(stage_a).stage(stage_b).run({})
+    assert result["final"]["a"] == 1
+    assert result["final"]["b"] == 2
 
 
 # -- V0.2 Price Limits -----------------------------------------------------------

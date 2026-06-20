@@ -1024,6 +1024,29 @@ async def get_quick_analysis(
     return await get_quick_analysis_impl(symbol=symbol, market=market)
 
 
+# -- Risk Metrics --
+
+@mcp.tool()
+async def get_risk_metrics(
+    symbol: str,
+    period: str = "1y",
+    market: str | None = None,
+    benchmark: str | None = None,
+) -> dict:
+    """Compute risk metrics: volatility, max drawdown, Sharpe, VaR, Beta.
+
+    Args:
+        symbol: Stock ticker or name.
+        period: Lookback period (3mo/6mo/1y/2y/5y).
+        market: Preferred market.
+        benchmark: Benchmark ticker for Beta (defaults to SPY for US, 000300.SS for CN).
+    """
+    from stockhub_mcp.tools.risk import get_risk_metrics_impl
+    return await get_risk_metrics_impl(
+        symbol=symbol, period=period, market=market, benchmark=benchmark,
+    )
+
+
 # ============================================================================
 # V0.4 工具
 # ============================================================================

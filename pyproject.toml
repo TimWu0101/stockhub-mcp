@@ -1,6 +1,6 @@
 [project]
 name = "stockhub-mcp"
-version = "0.1.0"
+version = "0.4.0"
 description = "StockHub MCP — 40-tool financial market data server for A-shares, HK stocks, US equities, funds, ETFs, futures, indices. Multi-source fallback: yfinance, efinance, Tencent, Sina, EastMoney, AkShare."
 requires-python = ">=3.10"
 dependencies = [

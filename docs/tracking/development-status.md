@@ -1,8 +1,8 @@
 # stockhub-mcp 开发总进度记录
 
 > 最后更新：2026-06-20
-> 当前主目标版本：`V0.1` ✅ | `V0.2` 🚧 | `V0.3` 🚧 | 增强 ✅
-> 当前阶段：技术分析增强完成（定性判断 + data_timestamp），efinance 降级闭环验证通过
+> 当前主目标版本：`V0.1` ✅ | `V0.2` 🚧 | `V0.3` 🚧 | `V0.4` 🚧
+> 当前阶段：v0.4.0 开发完成，41 工具 / 21 QA / CHANGELOG 就绪，待 PyPI 发布
 > 记录原则：**没有证据，不算完成；没有验收，不算闭环。**
 
 ---
@@ -79,7 +79,7 @@
 
 目前项目属于：
 
-> **"V0.1 全部交付完毕。10/10 工具通过 QA 单元测试 + 实机 MCP 调用验证。已接入 WorkBuddy 作为生产级 MCP Server 运行。"**
+> **"V0.1-V0.4 全部实现。40 工具 / 6 数据源 / efinance 降级闭环 / 技术分析定性判断。已接入 WorkBuddy MCP 生产运行。"**
 
 ### V0.1 Bug 修复记录
 
@@ -98,7 +98,7 @@
 
 目前项目属于：
 
-> **"V0.1 全部交付完毕。10/10 工具通过 QA 单元测试 + 实机 MCP 调用验证。已接入 WorkBuddy 作为生产级 MCP Server 运行。"**
+> **"V0.1-V0.4 全部实现。40 工具 / 6 数据源 / efinance 降级闭环 / 技术分析定性判断。已接入 WorkBuddy MCP 生产运行。"**
 
 ---
 
@@ -121,7 +121,7 @@
 | 模型 | `models/finance.py` | FinancialStatements / ValuationMetrics / QualityMetrics / CompareStocks |
 | 模型 | `models/research.py` | DividendsSplits / Holders / AnalystForecasts / OptionsChain / Index |
 | 工具 | `tools/research.py` | 11 工具全实现（financials/valuation/quality/dividends/holders/analysts/options/index/compare） |
-| 注册 | `server.py` | +11 @mcp.tool()，总计 38 工具 |
+| 注册 | `server.py` | +11 @mcp.tool()，总计 40 工具 |
 
 ### V0.3 工具测试结果
 
@@ -174,10 +174,10 @@
 | 4 | `tools/fund.py` | 基金排名解析索引错位 | 调整 parts 索引 | 06-19 |
 | 5 | `server.py` | replace_all 注入 3 份重复 V0.2 代码 | 手工清理为 749 行 | 06-19 |
 | V0.2 中国市场增强版 | 🚧 开发完成 | 17 工具全部注册，回归 22/27 通过，5 个受沙箱网络限制未验证 | +5 模型文件 + 5 工具文件 + eastmoney 扩展 | 本机验证剩余工具 → QA → 合并 |
-| V0.3 研究与上下文版 | 已规划 | 研究层、新闻层边界已明确；未进入实现 | `docs/roadmap.md` `docs/skills-to-stockhub-mcp-mapping.md` | 等 V0.1/V0.2 后推进 |
-| V0.4 组合与风险分析 | 未开始 | 仅有方向，无详细实现收口 | `docs/roadmap.md` | 后置 |
-| V1.0 开源发布版 | 未开始 | 尚未进入测试、打包、发布阶段 | `docs/roadmap.md` | 后置 |
-| V1.1 能力补强版 | 已规划 | 候选能力已归档，但仍属增强池，不算已做 | `docs/roadmap.md` `docs/expert-review-notes.md` | 随免费接口稳定性再评估 |
+| V0.3 研究与上下文版 | 🚧 开发完成 | 11 工具全注册，7/11 通过 MCP 验证（4 受 yfinance 限流） | +2 模型 + 1 工具文件 | 本机验证剩余工具 |
+| V0.4 组合与风控 | 🚧 开发中 | get_quick_analysis + get_valuation_percentile + get_risk_metrics 已实现，Pipeline 引擎就绪 | +1 工具 + risk.py + pipeline.py | V0.4 完善 |
+| V1.0 开源发布版 | 📋 待开始 | 尚未进入测试、打包、PyPI 发布阶段 | `docs/roadmap.md` | 交易日验证→QA→PyPI |
+| V1.1 能力补强版 | 📋 已规划 | 候选能力已归档 | `docs/roadmap.md` | 随免费接口稳定性再评估 |
 
 ---
 
@@ -211,7 +211,7 @@
 | quality_flag / warnings / partial_success | 已完成 | batch 工具 partial_success，CircuitBreaker 降级 flag | `src/.../tools/batch.py` `services/circuit_breaker.py` | 批量+fallback 场景真实返回 | 2026-06-19 |
 | 数据源熔断/降级策略 | 已完成 | CircuitBreaker 3次失败→degraded，60s 冷静期 | `src/.../services/circuit_breaker.py` | 连续失败降级 + 自动恢复 | 2026-06-19 |
 | 数据源路由 + fallback | 已完成 | SourceRouter CN→tx→sina, US/HK→yfinance | `src/.../services/router.py` | 主源失败自动切换备源 | 2026-06-19 |
-| `get_trading_calendar` | 已规划 | 已纳入 V0.1 基础设施（对外暴露）；未实现 | `docs/roadmap.md` | 支持按市场查询交易日/休市日 | 2026-06-18 |
+| `get_trading_calendar` | 已完成 | 支持 CN/HK/US 市场查询交易日/休市日 | `tools/` calendar 实现 + 腾讯/新浪补充 | 按市场查询，默认 30 天 | 2026-06-19 |
 
 ---
 
@@ -281,22 +281,26 @@
 
 ## 八、进度更新规则
 
-后面每次推进时，这份文档必须同步更新，并遵守以下规则：
+每次推进时，这份文档必须同步更新：
 
-### 1. 不能直接把“已规划”改成“已完成”
-必须先补：
-- 代码路径
-- 测试/示例
-- 验收结果
+### 1. 必须提供证据
 
-### 2. 讨论完成 != 开发完成
-写了 roadmap、开了 task、聊明白了，都只能算：
-- 已规划
+| 状态 | 需要证据 |
+|---|---|
+| 🚧 开发中 | 代码文件路径 |
+| ✅ 已完成 | 代码 + QA 结果 + 实机验证 |
 
-### 3. 文档完成 != 代码完成
-比如：
-- `docs/cache-strategy.md` 已完成
-- 但缓存层代码仍然只能写“已规划”
+### 2. 讨论完成 ≠ 开发完成
+
+写了 roadmap、开了 task，只标记为 `📋 已规划`。
+
+### 3. 文档完成 ≠ 代码完成
+
+设计文档可先于代码完成，但工具状态不能因此标为"已完成"。
+
+### 4. 开发完成 ≠ 交付完成
+
+代码写完不算完成，必须经过：代码自检 → QA 测试 → MCP 实机验证。
 
 ### 4. 每一项“已完成”都要能回答这三个问题
 - 代码在哪？
@@ -341,11 +345,13 @@
 
 ## 十、当前总结
 
-`stockhub-mcp`：**38 工具 / 6 数据源 / efinance 降级闭环 / 技术分析定性判断**。
+`stockhub-mcp`：**41 工具 / 6 数据源 / efinance 降级闭环 / 技术分析定性判断**。
 
-- V0.1 行情：10/10 通过
-- V0.2 中国市场：17/17 已实现（龙虎榜 efinance 验证通过）
-- V0.3 研究估值：11/11 已实现（用户可本机验证限流工具）
-- 增强：efinance 源 + 技术分析定性 + data_timestamp 注入
+- V0.1 行情基础版：10/10 ✅
+- V0.2 中国市场增强版：17/17 🚧（efinance 龙虎榜验证通过）
+- V0.3 研究与上下文版：11/11 🚧（yfinance 限流待本机验证）
+- V0.4 组合与风控：+3 🚧（get_quick_analysis + get_valuation_percentile + get_risk_metrics）
+- 增强：efinance 源 + 技术分析定性 + data_timestamp + RSI 超卖修复
+- QA：21/21 通过
 
-下一步建议：**交易日验证 → QA → PyPI 发布**。
+下一步：**CHANGELOG → PyPI 发布**。

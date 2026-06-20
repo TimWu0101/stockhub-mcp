@@ -45,6 +45,16 @@ async def get_quick_analysis_impl(
         result = await pipeline.run({})
         final = result.get("final", {})
 
+        # Check for stage failures
+        if "quote" not in final or not final["quote"].get("success"):
+            return builder.error(error={
+                "code": "QUOTE_FAILED",
+                "type": "source_error",
+                "message": final.get("quote", {}).get("error", {}).get("message", "Quote stage failed"),
+                "retryable": True,
+                "details": {},
+            })
+
         quote = final.get("quote", {}).get("data", {})
         ind = final.get("indicators", {}).get("data", {})
 
