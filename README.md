@@ -1,10 +1,23 @@
 # StockHub MCP
 
-> 一个零配置、免费的金融数据 MCP 服务器，覆盖 A 股、港股、美股、基金、ETF、期货、指数，为 AI 应用提供统一的行情与分析接口。
+> 零配置、免费、43 工具的金融数据 MCP 服务器 —— A 股/港股/美股/基金/ETF/期货/指数，多源自动降级，为 AI 应用提供统一行情与分析接口。
 
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Tools](https://img.shields.io/badge/tools-40-orange)](#工具列表)
+[![PyPI](https://img.shields.io/badge/pypi-v0.4.0-blue)](https://pypi.org/project/stockhub-mcp/)
+[![Tools](https://img.shields.io/badge/tools-43-orange)](https://github.com/TimWu0101/stockhub-mcp/blob/main/docs/TOOLS.md)
+
+---
+
+## 为什么选 StockHub
+
+| 特色 | 其他 MCP | StockHub |
+|---|---|---|
+| 配置要求 | 要配 API Key | **零配置可用**，6 源自动 fallback |
+| 市场覆盖 | 单市场（美股为主） | **三市场统一**，A 股/港股/美股一套 schema |
+| 技术分析 | 只给数字 | **智能定性**：7 档趋势 + 5 档量能 + 综合评分 |
+| 风险分析 | 无或需付费 | **纯本地计算**：波动率/夏普/回撤/VaR/Beta/相关性矩阵 |
+| AI 调用效率 | 一个请求一个指标 | **Pipeline 一键组合**：1 次调用 = 行情 + 6 指标 + 定性 |
 
 ---
 
@@ -12,45 +25,47 @@
 
 | 类别 | 能力 |
 |---|---|
-| 📈 实时行情 | A 股/港股/美股实时报价、批量查询 |
-| 📊 历史数据 | 多周期 K 线（日/周/月），前复权/后复权 |
-| 🔬 技术分析 | MA/MACD/RSI/KDJ/布林带 + 智能定性判断 |
-| 🏭 板块资金 | 行业板块/概念板块涨跌、市场资金流向 |
-| 🀄 A 股特色 | 龙虎榜、涨跌停计算、停牌查询、板块成分股 |
-| 💰 基金 ETF | 净值查询、历史净值、排名、ETF 详情 |
-| 📋 基本面 | 估值指标（PE/PB/PS/PEG）、盈利能力、财务三表 |
-| 💸 分红持仓 | 分红历史、拆股记录、机构持仓 |
-| 🏛️ 指数对比 | 标普/纳斯达克/恒生等指数行情与多指数对比 |
-| 🔮 分析预测 | 分析师预测、期权链（美股） |
-| ⚡ 快捷分析 | 一键组合：行情 + 技术指标 + 趋势判断 |
+| 📈 实时行情 | A 股/港股/美股实时报价、批量查询 [→工具](./docs/TOOLS.md#行情类) |
+| 📊 历史数据 | 多周期 K 线（日/周/月），前复权/后复权 [→工具](./docs/TOOLS.md#历史类) |
+| 🔬 技术分析 | MA/MACD/RSI/KDJ/布林带 + 智能定性判断 [→工具](./docs/TOOLS.md#技术分析) |
+| 🏭 板块资金 | 行业板块/概念板块涨跌、市场资金流向 [→工具](./docs/TOOLS.md#A股特色) |
+| 🀄 A 股特色 | 龙虎榜、涨跌停、停牌查询、南/北向资金 [→工具](./docs/TOOLS.md#A股特色) |
+| 💰 基金 ETF | 净值查询、历史净值、排名、ETF 详情 [→工具](./docs/TOOLS.md#基金ETF) |
+| 📋 研究估值 | PE/PB/PS/PEG、ROE、财务三表、历史分位 [→工具](./docs/TOOLS.md#研究估值) |
+| 📉 组合风险 | 相关性矩阵、组合暴露分析、波动率/夏普/VaR [→工具](./docs/TOOLS.md#组合风险) |
+| 🏛️ 指数期权 | 指数行情/对比、期权链（美股）、分析师预测 [→工具](./docs/TOOLS.md#指数期权) |
 
-## 覆盖范围
+[完整 43 工具列表 →](./docs/TOOLS.md)
 
-| 市场 | 资产类型 | 数据源 |
+## 数据源架构
+
+**6 数据源，自动降级，零配置：**
+
+```
+efinance → 东方财富 → 腾讯 → 新浪 → yfinance → AkShare
+  (A股增强)   (主要)    (行情)   (备源)   (美股/港股)   (兜底)
+```
+
+| 市场 | 数据源 | 免配置 |
 |---|---|---|
-| 🇨🇳 A 股 | 股票、板块、资金流、龙虎榜 | efinance、腾讯、新浪、东方财富 |
-| 🇭🇰 港股 | 股票、指数 | 腾讯、yfinance |
-| 🇺🇸 美股 | 股票、期权、基本面 | yfinance |
-| 💰 基金 | 公募基金净值/排名/搜索 | 东方财富 |
-| 📦 ETF | 行情/历史/元数据 | 东方财富、yfinance |
-| 🛢️ 期货 | 合约/仓单/基差 | AkShare |
+| 🇨🇳 A 股 | efinance、东方财富、腾讯、新浪 | ✅ |
+| 🇭🇰 港股 | 腾讯、yfinance | ✅ |
+| 🇺🇸 美股 | yfinance | ✅ |
+| 💰 基金/ETF | 东方财富 | ✅ |
+| 🛢️ 期货 | AkShare | ✅ |
 
-**6 个数据源，多级降级：** efinance → 东方财富 HTTP → 腾讯 → 新浪 → yfinance → AkShare，自动 fallback，无需配置。
+---
 
 ## 快速开始
-
-### 安装
 
 ```bash
 pip install stockhub-mcp
 
-# 可选增强（A 股龙虎榜/资金流更稳定）
+# 可选：A 股龙虎榜/资金流更稳定
 pip install efinance
 ```
 
 ### MCP 客户端配置
-
-安装后，在 MCP 客户端配置文件中添加：
 
 ```json
 {
@@ -63,93 +78,77 @@ pip install efinance
 }
 ```
 
-如果你使用的是 **Claude Desktop**，配置文件路径为 `~/Library/Application Support/Claude/claude_desktop_config.json`（macOS）或 `%APPDATA%\Claude\claude_desktop_config.json`（Windows）。
+Claude Desktop：`~/Library/Application Support/Claude/claude_desktop_config.json`
+
+---
 
 ## 使用示例
 
-### 查行情
+### 一键 Pipeline 分析
 
 ```
-→ 帮我查贵州茅台的实时行情
+→ 快速分析下贵州茅台
 
-← 贵州茅台 (600519)：¥1,215.00，跌幅 -2.02%，成交量 574 万手
-   今开 1,235 / 最高 1,238.87 / 最低 1,211.22
+← 贵州茅台 ¥1,215.00 跌 -2.02%
+   趋势：空头排列 | MACD 死叉 | RSI 超卖(17.25)反弹信号
+   阻力：MA5=1,254.74 | 偏离 -3.17%
+   信号：卖出(10分) | 量能：正常
 ```
+*一个调用 = 行情 + MA/MACD/RSI/KDJ/BOLL + 趋势定性 + 信号评分*
 
-### 技术分析
-
-```
-→ 帮我分析茅台的技术指标
-
-← 贵州茅台 (600519) │ 数据日期：2026-06-18
-   📉 空头排列 | MA5=1,254.74 | MACD 死叉
-   📊 RSI6=17.25 超卖 | KDJ J=-3.02 钝化
-   🟡 信号：卖出（评分 10）| 理由：MACD死叉 + RSI超卖反弹信号
-```
-
-### 估值对比
+### 组合相关性矩阵
 
 ```
-→ 对比一下茅台和五粮液的估值
+→ 茅台、五粮液、招行、美的四只票相关性怎么样
 
-← 贵州茅台：PE=18.4 / PB=8.5 / 股息率=0.36%
-   五粮液：PE=14.2 / PB=7.1 / 股息率=3.5%
+← 茅台↔五粮液 0.77(高度同步) | 招行↔美的 0.28(最佳分散)
+```
+*4 只标的，32 次历史查询并行完成，无需任何外部 API*
+
+### 一键风险报告
+
+```
+→ 茅台过去一年风险多大
+
+← 年化波动 20.05% | 最大回撤 -21.86%
+   夏普比率 -0.83 | 日 VaR(95%) -1.75%
+```
+*纯 numpy 本地计算，不依赖任何外部服务*
+
+### 技术面深度诊断
+
+```
+→ 茅台技术面什么状态
+
+← 空头排列，价格低于全部均线
+   MACD 死叉，DIF=-28.22 DIF <- DEA=-26.85
+   RSI6=17.25 极度超卖，RSI14=21.17
+   KDJ J=-3.02 罕见负值钝化
+   跌破布林下轨 1,226.79 → 1215 进入超跌区域
+   综合评分：10/100 卖出信号
+```
+*7 指标联动分析 + 定性判断，不只是数值输出*
+
+### 龙虎榜监控
+
+```
+→ 最近龙虎榜有哪些游资动向
+
+← 100 只上榜，净买入前 3：中钨高新 +6.39 亿、铂力特涨停、天和磁材+2.54 亿
+   净卖出前 3：光迅科技 -0.97 亿、兆易创新、宁波华翔
 ```
 
-### 龙虎榜
+### 多市场统一查询
 
 ```
-→ 今天龙虎榜有哪些
+→ 对比腾讯(港股)和苹果(美股)的估值
 
-← 100 只上榜股票：
-   中钨高新 +10.0% 净买入 6.39 亿 | 铂力特 +20% 涨停
-   光迅科技 +10.0% 净卖出 9,652 万 | 兆易创新 +7.3%
+← 腾讯：PE=22.4 / PB=5.2 / 股息率=0.3%
+   苹果：PE=32.1 / PB=38.5 / 股息率=0.46%
 ```
+*同一工具、同一 schema，不切换数据源*
 
-## 工具列表
-
-| # | 工具 | 说明 |
-|---|---|---|
-| 1 | `get_realtime_quote` | 单股实时行情 |
-| 2 | `get_price_history` | K 线历史数据 |
-| 3 | `get_batch_quotes` | 批量行情查询 |
-| 4 | `get_technical_indicators` | 技术指标 + 定性分析 |
-| 5 | `get_sector_boards` | 行业/概念板块 |
-| 6 | `get_capital_flow` | 市场资金流向 |
-| 7 | `search_symbol` | 标的模糊搜索 |
-| 8 | `get_source_status` | 数据源健康检查 |
-| 9 | `get_trading_calendar` | 交易日历查询 |
-| 10 | `clear_quote_cache` | 清空行情缓存 |
-| 11 | `get_northbound_flow` | 北向资金流 |
-| 12 | `get_southbound_flow` | 南向资金流 |
-| 13 | `get_dragon_tiger_list` | 龙虎榜 |
-| 14 | `get_sector_constituents` | 板块成分股 |
-| 15 | `get_price_limits` | 涨跌停计算 |
-| 16 | `get_symbol_status` | 标的交易状态 |
-| 17 | `get_fund_quote` | 基金净值 |
-| 18 | `get_fund_nav_history` | 基金历史净值 |
-| 19 | `get_fund_rankings` | 基金排名 |
-| 20 | `search_fund` | 基金搜索 |
-| 21 | `get_etf_quote` | ETF 行情 |
-| 22 | `get_etf_history` | ETF K线历史 |
-| 23 | `get_etf_info` | ETF 元数据 |
-| 24 | `search_futures_contract` | 期货合约搜索 |
-| 25 | `get_futures_contract_info` | 期货合约详情 |
-| 26 | `get_futures_position_rank` | 期货持仓排名 |
-| 27 | `get_futures_basis_history` | 期货基差历史 |
-| 28 | `get_financial_statements` | 财务三表 |
-| 29 | `get_valuation_metrics` | 估值指标 |
-| 30 | `get_quality_metrics` | 盈利能力指标 |
-| 31 | `get_dividends_splits` | 分红/拆股历史 |
-| 32 | `get_holders` | 机构持仓 |
-| 33 | `get_analyst_forecasts` | 分析师预测 |
-| 34 | `get_options_chain` | 期权链 |
-| 35 | `get_index_quote` | 指数行情 |
-| 36 | `get_index_history` | 指数历史 |
-| 37 | `compare_stocks` | 股票估值对比 |
-| 38 | `compare_indices` | 指数收益对比 |
-| 39 | `get_valuation_percentile` | PE/PB 历史分位 |
-| 40 | `get_quick_analysis` | 一键组合分析 |
+---
 
 ## 架构
 
@@ -163,9 +162,16 @@ stockhub_mcp/
 └── core/              # Pipeline 流水线引擎
 ```
 
+## 文档
+
+- [完整工具列表](./docs/TOOLS.md)
+- [Schema 参考](./docs/design/schema-reference.md)
+- [路线图](./docs/tracking/roadmap.md)
+- [CHANGELOG](./CHANGELOG.md)
+
 ## 免责声明
 
-⚠️ 数据来自公开免费接口（腾讯、新浪、东方财富、yfinance、AkShare、efinance），不保证实时性、完整性和准确性。本项目不构成任何投资建议，使用者自行承担投资风险。
+⚠️ 数据来自公开免费接口，不保证实时性、完整性和准确性。本项目不构成任何投资建议。
 
 ## 许可证
 
