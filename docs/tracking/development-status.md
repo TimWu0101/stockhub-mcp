@@ -1,8 +1,8 @@
 # stockhub-mcp 开发总进度记录
 
 > 最后更新：2026-06-20
-> 当前主目标版本：`V0.1` ✅ | `V0.2` 🚧 | `V0.3` 🚧 | `V0.4` 🚧
-> 当前阶段：v0.4.0 开发完成，41 工具 / 21 QA / CHANGELOG 就绪，待 PyPI 发布
+> 当前主目标版本：`V0.1` ✅ | `V0.2` 🚧 | `V0.3` 🚧 | `V0.4` ✅ | `V1.0` ✅
+> 当前阶段：**v0.4.0 已发布 PyPI**，43 工具 / 24 QA / 6 数据源
 > 记录原则：**没有证据，不算完成；没有验收，不算闭环。**
 
 ---
@@ -79,7 +79,7 @@
 
 目前项目属于：
 
-> **"V0.1-V0.4 全部实现。40 工具 / 6 数据源 / efinance 降级闭环 / 技术分析定性判断。已接入 WorkBuddy MCP 生产运行。"**
+> **"V0.1-V0.4 全部实现。43 工具 / 6 数据源 / efinance 降级闭环。已接入 WorkBuddy MCP 生产运行。"**
 
 ### V0.1 Bug 修复记录
 
@@ -98,7 +98,7 @@
 
 目前项目属于：
 
-> **"V0.1-V0.4 全部实现。40 工具 / 6 数据源 / efinance 降级闭环 / 技术分析定性判断。已接入 WorkBuddy MCP 生产运行。"**
+> **"V0.1-V0.4 全部实现。43 工具 / 6 数据源 / efinance 降级闭环。已接入 WorkBuddy MCP 生产运行。"**
 
 ---
 
@@ -121,7 +121,7 @@
 | 模型 | `models/finance.py` | FinancialStatements / ValuationMetrics / QualityMetrics / CompareStocks |
 | 模型 | `models/research.py` | DividendsSplits / Holders / AnalystForecasts / OptionsChain / Index |
 | 工具 | `tools/research.py` | 11 工具全实现（financials/valuation/quality/dividends/holders/analysts/options/index/compare） |
-| 注册 | `server.py` | +11 @mcp.tool()，总计 40 工具 |
+| 注册 | `server.py` | +2 @mcp.tool()，总计 43 工具 |
 
 ### V0.3 工具测试结果
 
@@ -175,9 +175,9 @@
 | 5 | `server.py` | replace_all 注入 3 份重复 V0.2 代码 | 手工清理为 749 行 | 06-19 |
 | V0.2 中国市场增强版 | 🚧 开发完成 | 17 工具全部注册，回归 22/27 通过，5 个受沙箱网络限制未验证 | +5 模型文件 + 5 工具文件 + eastmoney 扩展 | 本机验证剩余工具 → QA → 合并 |
 | V0.3 研究与上下文版 | 🚧 开发完成 | 11 工具全注册，7/11 通过 MCP 验证（4 受 yfinance 限流） | +2 模型 + 1 工具文件 | 本机验证剩余工具 |
-| V0.4 组合与风控 | 🚧 开发中 | get_quick_analysis + get_valuation_percentile + get_risk_metrics 已实现，Pipeline 引擎就绪 | +1 工具 + risk.py + pipeline.py | V0.4 完善 |
-| V1.0 开源发布版 | 📋 待开始 | 尚未进入测试、打包、PyPI 发布阶段 | `docs/roadmap.md` | 交易日验证→QA→PyPI |
-| V1.1 能力补强版 | 📋 已规划 | 候选能力已归档 | `docs/roadmap.md` | 随免费接口稳定性再评估 |
+| V0.4 组合与风控 | ✅ 已完成 | 5 工具全部交付（risk/correlation/exposure/quick_analysis/valuation_percentile + Pipeline） | +2 工具 + portfolio.py + risk.py + pipeline.py | 全部 MCP 验证通过 |
+| V1.0 开源发布版 | ✅ 已完成 | PyPI v0.4.0 已发布 | — | 交易日验证 V0.2 剩余工具 |
+| V1.1 能力补强版 | 📋 已规划 | 5 大待办方向 | `docs/roadmap.md` | 随免费接口稳定性评估 |
 
 ---
 
@@ -244,7 +244,7 @@
 | 项目 | 状态 | 影响 | 证据 / 背景 | 处理建议 |
 |---|---|---|---|---|
 | Git 推送无法在当前 AI 执行环境直接完成 | 阻塞中 | 影响我在该目录内直接 `git add/commit/push` | 已确认 `.git/index.lock` 写入受限 | 由用户本机终端执行推送 |
-| V0.1 schema 尚未定稿 | 进行中前阻塞 | 不定 schema，后面代码容易反复改 | 当前只有 roadmap / error / cache / review 分散定义 | 下一步优先定稿 schema |
+| V0.1 schema 定稿 | ✅ 已完成 | `docs/design/schema-reference.md` + 代码 `enums.py` | — | — |
 | 免费接口稳定性仍有差异 | 持续风险 | 影响 fallback 和字段一致性 | 来源分析文档已记录 | 实现时必须做 source adapter + warnings |
 | 新闻结构化仍未闭环 | 已识别风险 | 影响 V0.3 以后质量 | `docs/expert-review-notes.md` | 维持后置，不抢跑 |
 
@@ -335,23 +335,17 @@
 
 | # | 项 | 优先级 | 状态 |
 |---|---|---|---|
-| 1 | 交易日验证 V0.2 沙箱阻断工具（龙虎榜已通 via efinance） | 🟡 | ⚠️ 等交易日 |
-| 2 | QA 全量测试（V0.2+V0.3 新增工具） | 🟡 | ❌ 未做 |
-| 3 | `pyproject.toml` 整理 → PyPI 发布 | 🟡 | ❌ 未做 |
-| 4 | `get_valuation_percentile`（PE/PB 历史分位） | 🟢 | ❌ V0.4 |
-| 5 | YAML 策略插件系统 | 🟢 | ❌ V0.4 |
-| 6 | Pipeline 流水线编排 | 🟢 | ❌ V0.4 |
-| 7 | 优化评分算法（RSI 超卖应加分） | 🟢 | ❌ 小修复 |
+| 1 | 交易日验证 V0.2 剩余工具 | 🟡 | ⚠️ 等周一 |
+| 2 | YAML 策略插件系统 | 🟢 | ❌ V1.0+ |
 
 ## 十、当前总结
 
-`stockhub-mcp`：**41 工具 / 6 数据源 / efinance 降级闭环 / 技术分析定性判断**。
+`stockhub-mcp`：**43 工具 / 6 数据源 / efinance 降级闭环 / PyPI 已发布**。
 
 - V0.1 行情基础版：10/10 ✅
-- V0.2 中国市场增强版：17/17 🚧（efinance 龙虎榜验证通过）
+- V0.2 中国市场增强版：17/17 🚧（龙虎榜 efinance 验证通过，交易日验证中）
 - V0.3 研究与上下文版：11/11 🚧（yfinance 限流待本机验证）
-- V0.4 组合与风控：+3 🚧（get_quick_analysis + get_valuation_percentile + get_risk_metrics）
-- 增强：efinance 源 + 技术分析定性 + data_timestamp + RSI 超卖修复
-- QA：21/21 通过
-
-下一步：**CHANGELOG → PyPI 发布**。
+- V0.4 组合与风控：5/5 ✅
+- 增强：efinance + 技术分析定性 + data_timestamp + RSI 修复
+- QA：24/24 通过
+- 发布：PyPI v0.4.0 ✅

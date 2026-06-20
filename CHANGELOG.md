@@ -5,6 +5,8 @@
 ### 新功能
 
 - `get_risk_metrics`：波动率、最大回撤、夏普比率、VaR(95%)、Beta（纯本地计算）
+- `get_correlation_matrix`：多标的相关系数矩阵（2-10 只，并行获取历史）
+- `analyze_portfolio_exposure`：组合集中度、波动率、各标的年化收益/风险
 - `get_quick_analysis`：一键组合分析（行情 + 技术指标），基于 Pipeline 流水线引擎
 - `get_valuation_percentile`：PE/PB 历史分位估算
 - `core/pipeline.py`：异步流水线引擎，支持链式调用和错误传递
@@ -28,7 +30,17 @@
 - `v0.1-schema.md` → `schema-reference.md`：去版本号的活文档
 - 全部文档旧名 `market-data-mcp` → `stockhub-mcp`
 - 新增 `INDEX.md` 文档导航
-- roadmap 标记 V0.1-V0.3 `[已完成]`
+- roadmap 标记 V0.1-V0.4 `[已完成]`
+- 免责声明 + MIT License
+- `.pypirc` PyPI token 自动配置
+
+### 发布
+
+- PyPI 发布：`pip install stockhub-mcp`
+- https://pypi.org/project/stockhub-mcp/
+- wheel 构建 + `[build-system]` setuptools 配置
+- `[project.urls]` GitHub 链接
+- `readme` / `keywords` / `classifiers` 元数据
 
 ### Bug 修复
 
@@ -43,11 +55,17 @@
 ### 配置
 
 - `.env.example` 重写：中英双语注释，对齐 `config.py` 6 个配置项
-- `pyproject.toml`：version `0.1.0`，efinance 作为可选增强依赖
+- `pyproject.toml`：version `0.4.0`，efinance 作为可选增强依赖
+- `[build-system]` setuptools 配置
 
 ### QA
 
-- 21 测试全部通过（模型校验 + 错误路径 + Pipeline + 风险指标 + 响应构建器）
+- 24 测试全部通过（模型校验 + 错误路径 + Pipeline + 风险指标 + 组合分析）
+
+### 发布
+
+- PyPI 发布：`pip install stockhub-mcp`
+- https://pypi.org/project/stockhub-mcp/
 
 ---
 

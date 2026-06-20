@@ -155,7 +155,7 @@ pip install efinance
 
 ```
 stockhub_mcp/
-├── server.py          # FastMCP 入口，40 工具注册
+├── server.py          # FastMCP 入口，43 工具注册
 ├── domain/            # 领域层：符号解析、响应构建、交易时段
 ├── models/            # 17 个 Pydantic 数据模型
 ├── services/          # 6 个数据源 + 路由 + 熔断 + 缓存
@@ -163,19 +163,9 @@ stockhub_mcp/
 └── core/              # Pipeline 流水线引擎
 ```
 
-**设计原则：** 免费优先、零配置可用、统一响应格式、多源降级闭环。
+## 免责声明
 
-## 版本路线
-
-- ✅ V0.1：实时行情、K 线、技术指标、板块、资金流
-- 🚧 V0.2：A 股增强（基金/ETF/期货/龙虎榜）
-- 🚧 V0.3：研究估值（基本面/期权/指数对比）
-- 📋 V0.4：组合风险 + YAML 策略插件
-- 📋 V1.0：测试打磨 + PyPI 发布
-
-## 文档
-
-详见 [docs/INDEX.md](./docs/INDEX.md)
+⚠️ 数据来自公开免费接口（腾讯、新浪、东方财富、yfinance、AkShare、efinance），不保证实时性、完整性和准确性。本项目不构成任何投资建议，使用者自行承担投资风险。
 
 ## 许可证
 

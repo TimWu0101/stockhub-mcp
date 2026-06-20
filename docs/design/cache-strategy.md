@@ -25,7 +25,7 @@
 ### 首版启用缓存的工具
 - `get_realtime_quote`
 - `get_batch_quotes`（按 symbol 独立缓存）
-- `get_index_quote`（如后续加入）
+- `get_index_quote`（已实现 V0.3）
 
 ### 首版暂不启用缓存的工具
 - `get_market_news`

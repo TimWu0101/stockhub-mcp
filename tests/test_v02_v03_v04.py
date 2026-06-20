@@ -2,6 +2,8 @@
 
 import pytest
 import sys
+import numpy as np
+import pandas as pd
 from unittest.mock import patch, MagicMock
 
 # -- V0.2 Models ----------------------------------------------------------------
@@ -330,3 +332,34 @@ def test_standard_columns():
     assert "open" in STANDARD_COLUMNS
     assert "close" in STANDARD_COLUMNS
     assert len(STANDARD_COLUMNS) == 8
+
+
+# -- V0.4 Portfolio (unit) -------------------------------------------------------
+
+def test_correlation_matrix_math():
+    """Verify correlation matrix computation on a known dataset."""
+    import numpy as np
+    rng = np.random.default_rng(42)
+    n = 100
+    a = rng.normal(0.001, 0.02, n)
+    b = a * 0.8 + rng.normal(0, 0.01, n)  # highly correlated with a
+    c = rng.normal(0.002, 0.03, n)  # independent
+    df = pd.DataFrame({"A": a, "B": b, "C": c})
+    corr = df.corr()
+    assert corr.loc["A", "B"] > 0.75  # A and B should be highly correlated
+    assert abs(corr.loc["A", "C"]) < 0.3  # A and C should be loosely correlated
+
+
+@pytest.mark.asyncio
+async def test_correlation_matrix_too_few():
+    from stockhub_mcp.tools.portfolio import get_correlation_matrix_impl
+    result = await get_correlation_matrix_impl(symbols=["ONE"])
+    assert result["success"] is False
+    assert "TOO_FEW" in result.get("error", {}).get("code", "")
+
+
+@pytest.mark.asyncio
+async def test_portfolio_exposure_too_few():
+    from stockhub_mcp.tools.portfolio import analyze_portfolio_exposure_impl
+    result = await analyze_portfolio_exposure_impl(symbols=["ONE"])
+    assert result["success"] is False

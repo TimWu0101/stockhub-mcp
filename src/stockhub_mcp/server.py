@@ -1047,6 +1047,38 @@ async def get_risk_metrics(
     )
 
 
+# -- Portfolio Tools --
+
+@mcp.tool()
+async def get_correlation_matrix(
+    symbols: list[str],
+    period: str = "6mo",
+) -> dict:
+    """Compute pairwise correlation matrix for a list of stocks.
+
+    Args:
+        symbols: List of tickers (2-10).
+        period: Lookback period.
+    """
+    from stockhub_mcp.tools.portfolio import get_correlation_matrix_impl
+    return await get_correlation_matrix_impl(symbols=symbols, period=period)
+
+
+@mcp.tool()
+async def analyze_portfolio_exposure(
+    symbols: list[str],
+    period: str = "6mo",
+) -> dict:
+    """Analyze portfolio concentration, diversification, and risk.
+
+    Args:
+        symbols: Portfolio tickers (2-10).
+        period: Lookback period.
+    """
+    from stockhub_mcp.tools.portfolio import analyze_portfolio_exposure_impl
+    return await analyze_portfolio_exposure_impl(symbols=symbols, period=period)
+
+
 # ============================================================================
 # V0.4 工具
 # ============================================================================

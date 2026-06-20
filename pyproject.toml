@@ -1,7 +1,21 @@
 [project]
 name = "stockhub-mcp"
 version = "0.4.0"
-description = "StockHub MCP — 40-tool financial market data server for A-shares, HK stocks, US equities, funds, ETFs, futures, indices. Multi-source fallback: yfinance, efinance, Tencent, Sina, EastMoney, AkShare."
+description = "StockHub MCP — 43-tool financial market data server for A-shares, HK stocks, US equities, funds, ETFs, futures, indices. Multi-source fallback: yfinance, efinance, Tencent, Sina, EastMoney, AkShare."
+readme = "README.md"
+license = {text = "MIT"}
+keywords = ["mcp", "stock", "finance", "trading", "quantitative", "A-share", "美股", "港股"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Financial :: Investment",
+]
 requires-python = ">=3.10"
 dependencies = [
     "fastmcp>=2.0.0",
@@ -17,6 +31,10 @@ dependencies = [
     "python-dateutil>=2.8.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/TimWu0101/stockhub-mcp"
+Repository = "https://github.com/TimWu0101/stockhub-mcp"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0.0",
@@ -31,3 +49,11 @@ enhanced = [
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["stockhub_mcp*"]
