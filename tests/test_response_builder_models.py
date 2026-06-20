@@ -18,7 +18,7 @@ class TestResponseBuilder(unittest.TestCase):
 
     def test_success_has_correct_structure(self):
         """success() returns dict with success=True, data, meta."""
-        from market_data_mcp.domain.response_builder import ResponseBuilder
+        from stockhub_mcp.domain.response_builder import ResponseBuilder
         response = ResponseBuilder.success(data={"price": 100.0})
         self.assertTrue(response["success"])
         self.assertEqual(response["data"], {"price": 100.0})
@@ -28,20 +28,20 @@ class TestResponseBuilder(unittest.TestCase):
 
     def test_success_has_request_id(self):
         """success() auto-injects request_id in meta."""
-        from market_data_mcp.domain.response_builder import ResponseBuilder
+        from stockhub_mcp.domain.response_builder import ResponseBuilder
         response = ResponseBuilder.success(data={})
         self.assertIsNotNone(response["meta"]["request_id"])
         self.assertEqual(len(response["meta"]["request_id"]), 12)
 
     def test_success_accepts_custom_request_id(self):
         """success() accepts explicit request_id."""
-        from market_data_mcp.domain.response_builder import ResponseBuilder
+        from stockhub_mcp.domain.response_builder import ResponseBuilder
         response = ResponseBuilder.success(data={}, request_id="my-req-id")
         self.assertEqual(response["meta"]["request_id"], "my-req-id")
 
     def test_success_accepts_cache_info(self):
         """success() injects cache dict when provided."""
-        from market_data_mcp.domain.response_builder import ResponseBuilder
+        from stockhub_mcp.domain.response_builder import ResponseBuilder
         cache_info = {"hit": True, "expires_at": None}
         response = ResponseBuilder.success(data={}, cache=cache_info)
         self.assertIn("cache", response)
@@ -49,7 +49,7 @@ class TestResponseBuilder(unittest.TestCase):
 
     def test_success_accepts_warnings(self):
         """success() injects warnings list when provided."""
-        from market_data_mcp.domain.response_builder import ResponseBuilder
+        from stockhub_mcp.domain.response_builder import ResponseBuilder
         warnings = [{"code": "TEST", "message": "test warning"}]
         response = ResponseBuilder.success(data={}, warnings=warnings)
         self.assertIn("warnings", response)
@@ -57,7 +57,7 @@ class TestResponseBuilder(unittest.TestCase):
 
     def test_success_merges_meta(self):
         """success() merges caller-provided meta with defaults."""
-        from market_data_mcp.domain.response_builder import ResponseBuilder
+        from stockhub_mcp.domain.response_builder import ResponseBuilder
         response = ResponseBuilder.success(
             data={},
             meta={"market": "CN", "symbol": "CN:600519"}
@@ -71,7 +71,7 @@ class TestResponseBuilder(unittest.TestCase):
 
     def test_partial_success_structure(self):
         """partial_success() has partial_success=True."""
-        from market_data_mcp.domain.response_builder import ResponseBuilder
+        from stockhub_mcp.domain.response_builder import ResponseBuilder
         response = ResponseBuilder.partial_success(
             data={"quotes": [], "failed": ["AAPL"]},
             warnings=[{"code": "PARTIAL", "message": "Some failed"}]
@@ -82,7 +82,7 @@ class TestResponseBuilder(unittest.TestCase):
 
     def test_partial_success_without_warnings(self):
         """partial_success() works without warnings."""
-        from market_data_mcp.domain.response_builder import ResponseBuilder
+        from stockhub_mcp.domain.response_builder import ResponseBuilder
         response = ResponseBuilder.partial_success(data={})
         self.assertTrue(response["partial_success"])
         self.assertNotIn("warnings", response)
@@ -91,7 +91,7 @@ class TestResponseBuilder(unittest.TestCase):
 
     def test_error_structure(self):
         """error() returns success=False with error dict."""
-        from market_data_mcp.domain.response_builder import ResponseBuilder
+        from stockhub_mcp.domain.response_builder import ResponseBuilder
         response = ResponseBuilder.error(
             error={
                 "code": "SYMBOL_NOT_FOUND",
@@ -112,7 +112,7 @@ class TestResponseBuilder(unittest.TestCase):
 
     def test_error_defaults(self):
         """error() fills defaults for missing fields."""
-        from market_data_mcp.domain.response_builder import ResponseBuilder
+        from stockhub_mcp.domain.response_builder import ResponseBuilder
         response = ResponseBuilder.error(error={})
         self.assertFalse(response["success"])
         self.assertEqual(response["error"]["code"], "INTERNAL_ERROR")
@@ -124,13 +124,13 @@ class TestResponseBuilder(unittest.TestCase):
 
     def test_error_has_request_id(self):
         """error() also injects request_id."""
-        from market_data_mcp.domain.response_builder import ResponseBuilder
+        from stockhub_mcp.domain.response_builder import ResponseBuilder
         response = ResponseBuilder.error(error={})
         self.assertIn("request_id", response["meta"])
 
     def test_not_implemented(self):
         """not_implemented() returns standard error."""
-        from market_data_mcp.domain.response_builder import ResponseBuilder
+        from stockhub_mcp.domain.response_builder import ResponseBuilder
         response = ResponseBuilder.not_implemented("my_tool")
         self.assertFalse(response["success"])
         self.assertEqual(response["error"]["code"], "NOT_IMPLEMENTED")
@@ -147,7 +147,7 @@ class TestQuoteDataModel(unittest.TestCase):
 
     def test_minimal_construction(self):
         """QuoteData can be constructed with all required fields."""
-        from market_data_mcp.models.quote import QuoteData
+        from stockhub_mcp.models.quote import QuoteData
         quote = QuoteData(
             symbol="CN:600519",
             name="贵州茅台",
@@ -170,14 +170,14 @@ class TestQuoteDataModel(unittest.TestCase):
 
     def test_missing_required_field_raises(self):
         """QuoteData raises ValidationError if required field missing."""
-        from market_data_mcp.models.quote import QuoteData
+        from stockhub_mcp.models.quote import QuoteData
         from pydantic import ValidationError
         with self.assertRaises(ValidationError):
             QuoteData(name="Test")  # Missing symbol, price, etc.
 
     def test_field_types_enforced(self):
         """QuoteData enforces correct field types."""
-        from market_data_mcp.models.quote import QuoteData
+        from stockhub_mcp.models.quote import QuoteData
         from pydantic import ValidationError
         with self.assertRaises(ValidationError):
             QuoteData(
@@ -199,7 +199,7 @@ class TestQuoteDataModel(unittest.TestCase):
 
     def test_model_dump(self):
         """QuoteData.model_dump() produces a dict."""
-        from market_data_mcp.models.quote import QuoteData
+        from stockhub_mcp.models.quote import QuoteData
         quote = QuoteData(
             symbol="CN:600519", name="茅台", market="CN",
             price=1680.50, change=10.50, change_pct=0.63,
@@ -218,7 +218,7 @@ class TestHistoryDataModel(unittest.TestCase):
 
     def test_kline_item_construction(self):
         """KLineItem can be constructed with all fields."""
-        from market_data_mcp.models.history import KLineItem
+        from stockhub_mcp.models.history import KLineItem
         bar = KLineItem(
             date="2026-06-15",
             open=1670.0,
@@ -234,7 +234,7 @@ class TestHistoryDataModel(unittest.TestCase):
 
     def test_history_data_construction(self):
         """HistoryData can be constructed with KLineItem list."""
-        from market_data_mcp.models.history import HistoryData, KLineItem
+        from stockhub_mcp.models.history import HistoryData, KLineItem
         bars = [
             KLineItem(
                 date="2026-06-15", open=1670.0, high=1690.0,
@@ -262,7 +262,7 @@ class TestHistoryDataModel(unittest.TestCase):
 
     def test_history_data_empty_default(self):
         """HistoryData history defaults to empty list."""
-        from market_data_mcp.models.history import HistoryData
+        from stockhub_mcp.models.history import HistoryData
         history = HistoryData(
             symbol="CN:600519", market="CN",
             period="1mo", interval="1d", adjust="none", count=0,
@@ -276,7 +276,7 @@ class TestBatchQuoteModel(unittest.TestCase):
 
     def test_batch_quote_item_with_cache(self):
         """BatchQuoteItem can carry per-symbol cache info."""
-        from market_data_mcp.models.batch import BatchQuoteItem
+        from stockhub_mcp.models.batch import BatchQuoteItem
         item = BatchQuoteItem(
             symbol="CN:600519", name="茅台", price=1680.50,
             change=10.50, change_pct=0.63, open=1670.0,
@@ -291,7 +291,7 @@ class TestBatchQuoteModel(unittest.TestCase):
 
     def test_batch_quote_item_without_cache(self):
         """BatchQuoteItem cache is None by default."""
-        from market_data_mcp.models.batch import BatchQuoteItem
+        from stockhub_mcp.models.batch import BatchQuoteItem
         item = BatchQuoteItem(
             symbol="CN:600519", name="茅台", price=1680.50,
             change=10.50, change_pct=0.63, open=1670.0,
@@ -304,7 +304,7 @@ class TestBatchQuoteModel(unittest.TestCase):
 
     def test_batch_quote_data_construction(self):
         """BatchQuoteData with summary and quotes."""
-        from market_data_mcp.models.batch import (
+        from stockhub_mcp.models.batch import (
             BatchQuoteData, BatchQuoteItem, BatchSummary
         )
         data = BatchQuoteData(
@@ -322,7 +322,7 @@ class TestTechnicalIndicatorsModel(unittest.TestCase):
 
     def test_indicators_construction(self):
         """TechnicalIndicatorsData with full indicators dict."""
-        from market_data_mcp.models.indicators import TechnicalIndicatorsData
+        from stockhub_mcp.models.indicators import TechnicalIndicatorsData
         data = TechnicalIndicatorsData(
             symbol="CN:600519",
             adjusted="qfq",
@@ -342,7 +342,7 @@ class TestTechnicalIndicatorsModel(unittest.TestCase):
 
     def test_indicators_empty_default(self):
         """TechnicalIndicatorsData indicators defaults to empty dict."""
-        from market_data_mcp.models.indicators import TechnicalIndicatorsData
+        from stockhub_mcp.models.indicators import TechnicalIndicatorsData
         data = TechnicalIndicatorsData(
             symbol="CN:600519",
             adjusted="none",

@@ -18,7 +18,7 @@ class TestFIFOCacheStore(unittest.TestCase):
     """Test FIFOCacheStore in-memory FIFO cache."""
 
     def setUp(self):
-        from market_data_mcp.services.cache.store import FIFOCacheStore
+        from stockhub_mcp.services.cache.store import FIFOCacheStore
         self.store = FIFOCacheStore(max_size=3)
 
     # --- Basic read/write ---
@@ -127,7 +127,7 @@ class TestFIFOCacheStore(unittest.TestCase):
     def test_match_substring(self):
         """match() returns keys containing the pattern."""
         # Use larger store so all 4 keys fit (default setUp has max_size=3)
-        from market_data_mcp.services.cache.store import FIFOCacheStore
+        from stockhub_mcp.services.cache.store import FIFOCacheStore
         store = FIFOCacheStore(max_size=10)
         store.set("quote:CN:600519", 1)
         store.set("quote:CN:000001", 2)
@@ -214,8 +214,8 @@ class TestFIFOCacheStore(unittest.TestCase):
 
     def test_default_max_size_from_config(self):
         """When max_size not specified, uses config.cache_max_size."""
-        from market_data_mcp.services.cache.store import FIFOCacheStore
-        from market_data_mcp.config import settings
+        from stockhub_mcp.services.cache.store import FIFOCacheStore
+        from stockhub_mcp.config import settings
         store = FIFOCacheStore()
         self.assertEqual(store.max_size, settings.cache_max_size)
 
@@ -230,9 +230,9 @@ class TestCachePolicy(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        from market_data_mcp.services.cache.policy import CachePolicy
+        from stockhub_mcp.services.cache.policy import CachePolicy
         cls.policy = CachePolicy()
-        from market_data_mcp.enums import Market, MarketSession, QualityFlag
+        from stockhub_mcp.enums import Market, MarketSession, QualityFlag
         cls.Market = Market
         cls.MarketSession = MarketSession
         cls.QualityFlag = QualityFlag
@@ -433,7 +433,7 @@ class TestCachePolicy(unittest.TestCase):
 
     def test_build_key_format(self):
         """build_key produces expected format."""
-        from market_data_mcp.services.cache.policy import CachePolicy
+        from stockhub_mcp.services.cache.policy import CachePolicy
         key = CachePolicy.build_key(
             "get_realtime_quote", self.Market.CN,
             "stock", "CN:600519", "tx", "continuous"
@@ -446,8 +446,8 @@ class TestCachePolicy(unittest.TestCase):
     @staticmethod
     def test_build_key_no_session():
         """build_key works without session_state."""
-        from market_data_mcp.services.cache.policy import CachePolicy
-        from market_data_mcp.enums import Market
+        from stockhub_mcp.services.cache.policy import CachePolicy
+        from stockhub_mcp.enums import Market
         key = CachePolicy.build_key(
             "get_realtime_quote", Market.CN,
             "stock", "CN:600519", "tx"

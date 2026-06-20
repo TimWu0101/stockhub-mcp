@@ -1,77 +1,182 @@
-# Market Data MCP
+# StockHub MCP
 
-一个面向 AI 的统一金融数据 MCP 服务器，目标覆盖：
+> 一个零配置、免费的金融数据 MCP 服务器，覆盖 A 股、港股、美股、基金、ETF、期货、指数，为 AI 应用提供统一的行情与分析接口。
 
-- 美股
-- A股
-- 中国香港股票
-- 公募基金与 ETF
-- 期货
-- 宏观与政策上下文
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://python.org)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Tools](https://img.shields.io/badge/tools-40-orange)](#工具列表)
 
-## 项目目标
+---
 
-- 默认零配置可用
-- 优先使用免费数据源、公开接口与开源方案
-- 付费数据源只作为可选增强
-- 返回统一 schema，方便 AI 消费
-- 采用适合开源维护的工程结构
+## 能做什么
 
-## 数据源策略
+| 类别 | 能力 |
+|---|---|
+| 📈 实时行情 | A 股/港股/美股实时报价、批量查询 |
+| 📊 历史数据 | 多周期 K 线（日/周/月），前复权/后复权 |
+| 🔬 技术分析 | MA/MACD/RSI/KDJ/布林带 + 智能定性判断 |
+| 🏭 板块资金 | 行业板块/概念板块涨跌、市场资金流向 |
+| 🀄 A 股特色 | 龙虎榜、涨跌停计算、停牌查询、板块成分股 |
+| 💰 基金 ETF | 净值查询、历史净值、排名、ETF 详情 |
+| 📋 基本面 | 估值指标（PE/PB/PS/PEG）、盈利能力、财务三表 |
+| 💸 分红持仓 | 分红历史、拆股记录、机构持仓 |
+| 🏛️ 指数对比 | 标普/纳斯达克/恒生等指数行情与多指数对比 |
+| 🔮 分析预测 | 分析师预测、期权链（美股） |
+| ⚡ 快捷分析 | 一键组合：行情 + 技术指标 + 趋势判断 |
 
-- 中国市场免费源参考 leek-fund 的公开接口思路
-- 美股 / 中国香港历史与基本面优先使用 yfinance
-- AkShare 作为中国市场的免费兜底与增强层
-- A股可选 Tushare 增强，但不作为默认前提
-- 技术指标通过 pandas / numpy 本地计算
+## 覆盖范围
 
-## 版本路线摘要
+| 市场 | 资产类型 | 数据源 |
+|---|---|---|
+| 🇨🇳 A 股 | 股票、板块、资金流、龙虎榜 | efinance、腾讯、新浪、东方财富 |
+| 🇭🇰 港股 | 股票、指数 | 腾讯、yfinance |
+| 🇺🇸 美股 | 股票、期权、基本面 | yfinance |
+| 💰 基金 | 公募基金净值/排名/搜索 | 东方财富 |
+| 📦 ETF | 行情/历史/元数据 | 东方财富、yfinance |
+| 🛢️ 期货 | 合约/仓单/基差 | AkShare |
 
-- V0.1：实时行情、历史 K 线、技术指标、板块、资金流、标的搜索、交易日历、源健康检查
-- V0.2：中国市场增强版，补充基金、ETF、期货、南北向资金、龙虎榜、涨跌停、停牌查询
-- V0.3：研究与上下文版，补充基本面、估值分位、期权链、宏观、政策与新闻层
-- V0.4：组合与风险分析
-- V1.0：测试、文档、配置、发布打磨
-- V1.1：主闭环完成后的能力补强版
+**6 个数据源，多级降级：** efinance → 东方财富 HTTP → 腾讯 → 新浪 → yfinance → AkShare，自动 fallback，无需配置。
 
-详细规划见 `docs/roadmap.md`。
+## 快速开始
 
-## 借鉴与引用仓库
+### 安装
 
-已整理单独清单，见 `docs/referenced-repos.md`，方便后续回查我们分析和借鉴过的 GitHub 仓库。
+```bash
+pip install stockhub-mcp
 
-## Skill 参考分析
+# 可选增强（A 股龙虎榜/资金流更稳定）
+pip install efinance
+```
 
-已整理桌面 `mcp开发辅助/skills` 目录中的 skill 分析，见 `docs/skills-analysis.md`，用于回查哪些接口、能力和架构思路值得被 `market-data-mcp` 借鉴。
+### MCP 客户端配置
 
-## Skill / 仓库映射清单
+安装后，在 MCP 客户端配置文件中添加：
 
-已整理 `docs/skills-to-market-data-mcp-mapping.md`，用于快速查看 skill / 仓库 -> 可用接口 -> 对应工具 -> 版本归属 -> 是否免费 -> 风险限制 的映射关系。
+```json
+{
+  "mcpServers": {
+    "stockhub": {
+      "command": "fastmcp",
+      "args": ["run", "stockhub_mcp.server:mcp"]
+    }
+  }
+}
+```
 
-## 动态缓存策略
+如果你使用的是 **Claude Desktop**，配置文件路径为 `~/Library/Application Support/Claude/claude_desktop_config.json`（macOS）或 `%APPDATA%\Claude\claude_desktop_config.json`（Windows）。
 
-已整理 `docs/cache-strategy.md`，用于定义价格类查询在不同市场时段下的正式缓存策略：A股与中国香港股票优先采用绝对过期时间，并显式避开午休/竞价/收市竞价等关键交易切换窗口；美股继续使用基于美东交易时段的保守短 TTL；同时补充调用方主动清缓存能力设计，以控制重复调用带来的额度消耗并支持显式刷新。
+## 使用示例
 
-## 闭环与容错设计
+### 查行情
 
-已整理 `docs/error-model.md`，用于定义统一错误码、partial success、warning、质量标记和容错结构。
+```
+→ 帮我查贵州茅台的实时行情
 
-## 专家复核笔记
+← 贵州茅台 (600519)：¥1,215.00，跌幅 -2.02%，成交量 574 万手
+   今开 1,235 / 最高 1,238.87 / 最低 1,211.22
+```
 
-已整理 `docs/expert-review-notes.md`，从股票研究、市场语义、数据一致性和 AI 调用体验角度补充遗漏项与优化建议，并标记这些建议是否已同步回填到对应版本。
+### 技术分析
 
-## V0.1 Schema 定义
+```
+→ 帮我分析茅台的技术指标
 
-已整理 `docs/v0.1-schema.md`，统一定义所有 V0.1 工具的入参、返回结构、通用字段、枚举值、缓存元信息和错误模型速查，作为后续实现的基准。
+← 贵州茅台 (600519) │ 数据日期：2026-06-18
+   📉 空头排列 | MA5=1,254.74 | MACD 死叉
+   📊 RSI6=17.25 超卖 | KDJ J=-3.02 钝化
+   🟡 信号：卖出（评分 10）| 理由：MACD死叉 + RSI超卖反弹信号
+```
 
-## 开发总进度记录
+### 估值对比
 
-已整理 `docs/development-status.md`，用于跟踪各版本、各工具与基础设施的真实开发状态，并强制记录证据、验收标准和最近更新，防止只写状态不落实。
+```
+→ 对比一下茅台和五粮液的估值
 
-## 当前状态
+← 贵州茅台：PE=18.4 / PB=8.5 / 股息率=0.36%
+   五粮液：PE=14.2 / PB=7.1 / 股息率=3.5%
+```
 
-目前处于方案与架构整理阶段。
+### 龙虎榜
 
-## 仓库
+```
+→ 今天龙虎榜有哪些
 
-GitHub: https://github.com/TimWu0101/market-data-mcp
+← 100 只上榜股票：
+   中钨高新 +10.0% 净买入 6.39 亿 | 铂力特 +20% 涨停
+   光迅科技 +10.0% 净卖出 9,652 万 | 兆易创新 +7.3%
+```
+
+## 工具列表
+
+| # | 工具 | 说明 |
+|---|---|---|
+| 1 | `get_realtime_quote` | 单股实时行情 |
+| 2 | `get_price_history` | K 线历史数据 |
+| 3 | `get_batch_quotes` | 批量行情查询 |
+| 4 | `get_technical_indicators` | 技术指标 + 定性分析 |
+| 5 | `get_sector_boards` | 行业/概念板块 |
+| 6 | `get_capital_flow` | 市场资金流向 |
+| 7 | `search_symbol` | 标的模糊搜索 |
+| 8 | `get_source_status` | 数据源健康检查 |
+| 9 | `get_trading_calendar` | 交易日历查询 |
+| 10 | `clear_quote_cache` | 清空行情缓存 |
+| 11 | `get_northbound_flow` | 北向资金流 |
+| 12 | `get_southbound_flow` | 南向资金流 |
+| 13 | `get_dragon_tiger_list` | 龙虎榜 |
+| 14 | `get_sector_constituents` | 板块成分股 |
+| 15 | `get_price_limits` | 涨跌停计算 |
+| 16 | `get_symbol_status` | 标的交易状态 |
+| 17 | `get_fund_quote` | 基金净值 |
+| 18 | `get_fund_nav_history` | 基金历史净值 |
+| 19 | `get_fund_rankings` | 基金排名 |
+| 20 | `search_fund` | 基金搜索 |
+| 21 | `get_etf_quote` | ETF 行情 |
+| 22 | `get_etf_history` | ETF K线历史 |
+| 23 | `get_etf_info` | ETF 元数据 |
+| 24 | `search_futures_contract` | 期货合约搜索 |
+| 25 | `get_futures_contract_info` | 期货合约详情 |
+| 26 | `get_futures_position_rank` | 期货持仓排名 |
+| 27 | `get_futures_basis_history` | 期货基差历史 |
+| 28 | `get_financial_statements` | 财务三表 |
+| 29 | `get_valuation_metrics` | 估值指标 |
+| 30 | `get_quality_metrics` | 盈利能力指标 |
+| 31 | `get_dividends_splits` | 分红/拆股历史 |
+| 32 | `get_holders` | 机构持仓 |
+| 33 | `get_analyst_forecasts` | 分析师预测 |
+| 34 | `get_options_chain` | 期权链 |
+| 35 | `get_index_quote` | 指数行情 |
+| 36 | `get_index_history` | 指数历史 |
+| 37 | `compare_stocks` | 股票估值对比 |
+| 38 | `compare_indices` | 指数收益对比 |
+| 39 | `get_valuation_percentile` | PE/PB 历史分位 |
+| 40 | `get_quick_analysis` | 一键组合分析 |
+
+## 架构
+
+```
+stockhub_mcp/
+├── server.py          # FastMCP 入口，40 工具注册
+├── domain/            # 领域层：符号解析、响应构建、交易时段
+├── models/            # 17 个 Pydantic 数据模型
+├── services/          # 6 个数据源 + 路由 + 熔断 + 缓存
+├── tools/             # 17 个工具实现模块
+└── core/              # Pipeline 流水线引擎
+```
+
+**设计原则：** 免费优先、零配置可用、统一响应格式、多源降级闭环。
+
+## 版本路线
+
+- ✅ V0.1：实时行情、K 线、技术指标、板块、资金流
+- 🚧 V0.2：A 股增强（基金/ETF/期货/龙虎榜）
+- 🚧 V0.3：研究估值（基本面/期权/指数对比）
+- 📋 V0.4：组合风险 + YAML 策略插件
+- 📋 V1.0：测试打磨 + PyPI 发布
+
+## 文档
+
+详见 [docs/INDEX.md](./docs/INDEX.md)
+
+## 许可证
+
+MIT

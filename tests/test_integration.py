@@ -20,7 +20,7 @@ class TestSymbolResolverIntegration(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        from market_data_mcp.domain.symbol.resolver import SymbolResolver
+        from stockhub_mcp.domain.symbol.resolver import SymbolResolver
         cls.resolver = SymbolResolver()
 
     def test_resolve_well_known_cn_stocks(self):
@@ -79,9 +79,9 @@ class TestSymbolResolverIntegration(unittest.TestCase):
 
     def test_name_resolution_all_cn(self):
         """Every hardcoded CN stock resolves by name."""
-        from market_data_mcp.enums import Market
+        from stockhub_mcp.enums import Market
         # Get all CN entries from _KNOWN_SYMBOLS
-        from market_data_mcp.domain.symbol.resolver import _KNOWN_SYMBOLS
+        from stockhub_mcp.domain.symbol.resolver import _KNOWN_SYMBOLS
         cn_entries = _KNOWN_SYMBOLS.get(Market.CN, [])
         for entry in cn_entries:
             name = entry["name"]
@@ -108,7 +108,7 @@ class TestFIFOCacheStoreStress(unittest.TestCase):
 
     def test_rapid_insert_200_entries(self):
         """Insert 200 entries quickly, verify max_size respected."""
-        from market_data_mcp.services.cache.store import FIFOCacheStore
+        from stockhub_mcp.services.cache.store import FIFOCacheStore
         store = FIFOCacheStore(max_size=50)
 
         for i in range(200):
@@ -124,7 +124,7 @@ class TestFIFOCacheStoreStress(unittest.TestCase):
 
     def test_stress_match_on_many_entries(self):
         """match() works correctly with many entries."""
-        from market_data_mcp.services.cache.store import FIFOCacheStore
+        from stockhub_mcp.services.cache.store import FIFOCacheStore
         store = FIFOCacheStore(max_size=100)
 
         for i in range(100):
@@ -140,7 +140,7 @@ class TestFIFOCacheStoreStress(unittest.TestCase):
 
     def test_mixed_operations(self):
         """Set, get, delete, match, clear in sequence."""
-        from market_data_mcp.services.cache.store import FIFOCacheStore
+        from stockhub_mcp.services.cache.store import FIFOCacheStore
         store = FIFOCacheStore(max_size=10)
 
         # Setup
@@ -168,10 +168,10 @@ class TestCacheMiddlewareIntegration(unittest.TestCase):
     """Integration tests for CacheMiddleware.wrap()."""
 
     def setUp(self):
-        from market_data_mcp.services.cache.store import FIFOCacheStore
-        from market_data_mcp.services.cache.policy import CachePolicy
-        from market_data_mcp.tools.cache_middleware import CacheMiddleware
-        from market_data_mcp.domain.market.session import MarketSessionResolver
+        from stockhub_mcp.services.cache.store import FIFOCacheStore
+        from stockhub_mcp.services.cache.policy import CachePolicy
+        from stockhub_mcp.tools.cache_middleware import CacheMiddleware
+        from stockhub_mcp.domain.market.session import MarketSessionResolver
         self.store = FIFOCacheStore(max_size=10)
         self.policy = CachePolicy()
         self.session_resolver = MarketSessionResolver()

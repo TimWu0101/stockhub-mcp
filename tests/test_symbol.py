@@ -13,7 +13,7 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from market_data_mcp.domain.symbol.normalizer import SymbolNormalizer
+from stockhub_mcp.domain.symbol.normalizer import SymbolNormalizer
 
 
 class TestStandardSymbol(unittest.TestCase):
@@ -21,45 +21,45 @@ class TestStandardSymbol(unittest.TestCase):
 
     def test_to_internal_cn(self):
         """CN:600519 → 'CN:600519'."""
-        from market_data_mcp.domain.symbol.resolver import StandardSymbol
-        from market_data_mcp.enums import Market
+        from stockhub_mcp.domain.symbol.resolver import StandardSymbol
+        from stockhub_mcp.enums import Market
         sym = StandardSymbol(market=Market.CN, code="600519")
         self.assertEqual(sym.to_internal(), "CN:600519")
 
     def test_to_internal_us(self):
         """US:AAPL → 'US:AAPL'."""
-        from market_data_mcp.domain.symbol.resolver import StandardSymbol
-        from market_data_mcp.enums import Market
+        from stockhub_mcp.domain.symbol.resolver import StandardSymbol
+        from stockhub_mcp.enums import Market
         sym = StandardSymbol(market=Market.US, code="AAPL")
         self.assertEqual(sym.to_internal(), "US:AAPL")
 
     def test_to_internal_hk(self):
         """HK:00700 → 'HK:00700'."""
-        from market_data_mcp.domain.symbol.resolver import StandardSymbol
-        from market_data_mcp.enums import Market
+        from stockhub_mcp.domain.symbol.resolver import StandardSymbol
+        from stockhub_mcp.enums import Market
         sym = StandardSymbol(market=Market.HK, code="00700")
         self.assertEqual(sym.to_internal(), "HK:00700")
 
     def test_from_internal(self):
         """Parse 'CN:600519' back to StandardSymbol."""
-        from market_data_mcp.domain.symbol.resolver import StandardSymbol
-        from market_data_mcp.enums import Market
+        from stockhub_mcp.domain.symbol.resolver import StandardSymbol
+        from stockhub_mcp.enums import Market
         sym = StandardSymbol.from_internal("CN:600519")
         self.assertEqual(sym.market, Market.CN)
         self.assertEqual(sym.code, "600519")
 
     def test_from_internal_us(self):
         """Parse 'US:AAPL' back to StandardSymbol."""
-        from market_data_mcp.domain.symbol.resolver import StandardSymbol
-        from market_data_mcp.enums import Market
+        from stockhub_mcp.domain.symbol.resolver import StandardSymbol
+        from stockhub_mcp.enums import Market
         sym = StandardSymbol.from_internal("US:AAPL")
         self.assertEqual(sym.market, Market.US)
         self.assertEqual(sym.code, "AAPL")
 
     def test_immutable(self):
         """StandardSymbol is frozen (immutable)."""
-        from market_data_mcp.domain.symbol.resolver import StandardSymbol
-        from market_data_mcp.enums import Market
+        from stockhub_mcp.domain.symbol.resolver import StandardSymbol
+        from stockhub_mcp.enums import Market
         sym = StandardSymbol(market=Market.CN, code="600519")
         with self.assertRaises(Exception):
             sym.code = "000001"  # type: ignore[misc]
@@ -70,7 +70,7 @@ class TestSymbolResolver(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        from market_data_mcp.domain.symbol.resolver import SymbolResolver
+        from stockhub_mcp.domain.symbol.resolver import SymbolResolver
         cls.resolver = SymbolResolver()
 
     # --- Code-based resolution ---
@@ -148,7 +148,7 @@ class TestSymbolResolver(unittest.TestCase):
 
     def test_resolve_with_preferred_market(self):
         """With preferred_market=Market.HK, '银行' only matches HK."""
-        from market_data_mcp.enums import Market
+        from stockhub_mcp.enums import Market
         result = self.resolver.resolve("银行", preferred_market=Market.HK)
         # HK market only has 招商银行, but "银行" substring also matches some CN ones
         # Actually there may be no HK stocks with "银行" in the hardcoded HK list
@@ -175,22 +175,22 @@ class TestSymbolNormalizer(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        from market_data_mcp.domain.symbol.normalizer import SymbolNormalizer
+        from stockhub_mcp.domain.symbol.normalizer import SymbolNormalizer
         cls.normalizer = SymbolNormalizer()
 
     def _make_cn(self, code):
-        from market_data_mcp.domain.symbol.resolver import StandardSymbol
-        from market_data_mcp.enums import Market
+        from stockhub_mcp.domain.symbol.resolver import StandardSymbol
+        from stockhub_mcp.enums import Market
         return StandardSymbol(market=Market.CN, code=code)
 
     def _make_hk(self, code):
-        from market_data_mcp.domain.symbol.resolver import StandardSymbol
-        from market_data_mcp.enums import Market
+        from stockhub_mcp.domain.symbol.resolver import StandardSymbol
+        from stockhub_mcp.enums import Market
         return StandardSymbol(market=Market.HK, code=code)
 
     def _make_us(self, code):
-        from market_data_mcp.domain.symbol.resolver import StandardSymbol
-        from market_data_mcp.enums import Market
+        from stockhub_mcp.domain.symbol.resolver import StandardSymbol
+        from stockhub_mcp.enums import Market
         return StandardSymbol(market=Market.US, code=code)
 
     # --- Tencent ---

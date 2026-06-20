@@ -20,7 +20,7 @@ class TestCircuitBreaker(unittest.TestCase):
     """Test CircuitBreaker failure tracking and recovery."""
 
     def setUp(self):
-        from market_data_mcp.services.circuit_breaker import CircuitBreaker
+        from stockhub_mcp.services.circuit_breaker import CircuitBreaker
         # Use small thresholds for fast tests
         self.cb = CircuitBreaker(
             failure_threshold=3,
@@ -36,7 +36,7 @@ class TestCircuitBreaker(unittest.TestCase):
 
     def test_initial_status_available(self):
         """New source status is AVAILABLE."""
-        from market_data_mcp.enums import SourceStatus
+        from stockhub_mcp.enums import SourceStatus
         self.assertEqual(
             self.cb.get_status("test_source"),
             SourceStatus.AVAILABLE
@@ -63,7 +63,7 @@ class TestCircuitBreaker(unittest.TestCase):
 
     def test_three_failures_status_degraded(self):
         """3 failures → SourceStatus.DEGRADED."""
-        from market_data_mcp.enums import SourceStatus
+        from stockhub_mcp.enums import SourceStatus
         for _ in range(3):
             self.cb.record_failure("src")
         self.assertEqual(
@@ -152,7 +152,7 @@ class TestCircuitBreaker(unittest.TestCase):
     def test_old_failures_outside_window_not_counted(self):
         """Only failures within the rolling window are counted."""
         # Create a breaker with tiny failure window
-        from market_data_mcp.services.circuit_breaker import CircuitBreaker
+        from stockhub_mcp.services.circuit_breaker import CircuitBreaker
         cb_short = CircuitBreaker(
             failure_threshold=3,
             cooldown_seconds=300,

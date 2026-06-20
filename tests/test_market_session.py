@@ -20,9 +20,9 @@ class TestMarketSessionResolver(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        from market_data_mcp.domain.market.session import MarketSessionResolver
+        from stockhub_mcp.domain.market.session import MarketSessionResolver
         cls.resolver = MarketSessionResolver()
-        from market_data_mcp.enums import Market, MarketSession
+        from stockhub_mcp.enums import Market, MarketSession
         cls.Market = Market
         cls.MarketSession = MarketSession
 

@@ -19,7 +19,7 @@ class TestEnums(unittest.TestCase):
 
     def test_market_values(self):
         """Market enum must have CN, HK, US values."""
-        from market_data_mcp.enums import Market
+        from stockhub_mcp.enums import Market
         self.assertEqual(Market.CN.value, "CN")
         self.assertEqual(Market.HK.value, "HK")
         self.assertEqual(Market.US.value, "US")
@@ -28,7 +28,7 @@ class TestEnums(unittest.TestCase):
 
     def test_instrument_type_values(self):
         """InstrumentType must have stock/etf/index/fund/future."""
-        from market_data_mcp.enums import InstrumentType
+        from stockhub_mcp.enums import InstrumentType
         self.assertEqual(InstrumentType.STOCK.value, "stock")
         self.assertEqual(InstrumentType.ETF.value, "etf")
         self.assertEqual(InstrumentType.INDEX.value, "index")
@@ -37,7 +37,7 @@ class TestEnums(unittest.TestCase):
 
     def test_market_session_values(self):
         """MarketSession must have all trading phases."""
-        from market_data_mcp.enums import MarketSession
+        from stockhub_mcp.enums import MarketSession
         self.assertEqual(MarketSession.PRE_OPENING.value, "pre_opening")
         self.assertEqual(MarketSession.CONTINUOUS.value, "continuous")
         self.assertEqual(MarketSession.LUNCH_BREAK.value, "lunch_break")
@@ -48,7 +48,7 @@ class TestEnums(unittest.TestCase):
 
     def test_data_source_values(self):
         """DataSource must have yfinance/tx/sina/eastmoney/akshare/tushare/computed."""
-        from market_data_mcp.enums import DataSource
+        from stockhub_mcp.enums import DataSource
         self.assertEqual(DataSource.YFINANCE.value, "yfinance")
         self.assertEqual(DataSource.TX.value, "tx")
         self.assertEqual(DataSource.SINA.value, "sina")
@@ -59,7 +59,7 @@ class TestEnums(unittest.TestCase):
 
     def test_quality_flag_values(self):
         """QualityFlag must have live/delayed/stale/fallback/etc."""
-        from market_data_mcp.enums import QualityFlag
+        from stockhub_mcp.enums import QualityFlag
         self.assertEqual(QualityFlag.LIVE.value, "live")
         self.assertEqual(QualityFlag.DELAYED.value, "delayed")
         self.assertEqual(QualityFlag.STALE.value, "stale")
@@ -70,7 +70,7 @@ class TestEnums(unittest.TestCase):
 
     def test_str_enum_behavior(self):
         """StrEnum instances behave like strings."""
-        from market_data_mcp.enums import Market, MarketSession
+        from stockhub_mcp.enums import Market, MarketSession
         self.assertEqual(str(Market.CN), "CN")
         self.assertEqual(str(MarketSession.CONTINUOUS), "continuous")
         # Can be compared to strings
@@ -79,7 +79,7 @@ class TestEnums(unittest.TestCase):
 
     def test_error_type_values(self):
         """ErrorType must have input/business/source/system_error."""
-        from market_data_mcp.enums import ErrorType
+        from stockhub_mcp.enums import ErrorType
         self.assertEqual(ErrorType.INPUT_ERROR.value, "input_error")
         self.assertEqual(ErrorType.BUSINESS_ERROR.value, "business_error")
         self.assertEqual(ErrorType.SOURCE_ERROR.value, "source_error")
@@ -87,14 +87,14 @@ class TestEnums(unittest.TestCase):
 
     def test_source_status_values(self):
         """SourceStatus must have available/degraded/unavailable."""
-        from market_data_mcp.enums import SourceStatus
+        from stockhub_mcp.enums import SourceStatus
         self.assertEqual(SourceStatus.AVAILABLE.value, "available")
         self.assertEqual(SourceStatus.DEGRADED.value, "degraded")
         self.assertEqual(SourceStatus.UNAVAILABLE.value, "unavailable")
 
     def test_cache_scope_values(self):
         """CacheScope must have symbol/market/tool/all."""
-        from market_data_mcp.enums import CacheScope
+        from stockhub_mcp.enums import CacheScope
         self.assertEqual(CacheScope.SYMBOL.value, "symbol")
         self.assertEqual(CacheScope.MARKET.value, "market")
         self.assertEqual(CacheScope.TOOL.value, "tool")
@@ -102,7 +102,7 @@ class TestEnums(unittest.TestCase):
 
     def test_adjust_type_values(self):
         """AdjustType must have none/qfq/hfq."""
-        from market_data_mcp.enums import AdjustType
+        from stockhub_mcp.enums import AdjustType
         self.assertEqual(AdjustType.NONE.value, "none")
         self.assertEqual(AdjustType.QFQ.value, "qfq")
         self.assertEqual(AdjustType.HFQ.value, "hfq")
@@ -114,9 +114,9 @@ class TestConfig(unittest.TestCase):
     def setUp(self):
         # Import after clearing any cached env
         import importlib
-        import market_data_mcp.config
-        importlib.reload(market_data_mcp.config)
-        self.settings = market_data_mcp.config.settings
+        import stockhub_mcp.config
+        importlib.reload(stockhub_mcp.config)
+        self.settings = stockhub_mcp.config.settings
 
     def test_cache_max_size_default(self):
         """CACHE_MAX_SIZE defaults to 100."""
@@ -177,9 +177,9 @@ class TestConfig(unittest.TestCase):
         """CACHE_MAX_SIZE can be overridden via environment variable."""
         os.environ["CACHE_MAX_SIZE"] = "50"
         import importlib
-        import market_data_mcp.config
-        importlib.reload(market_data_mcp.config)
-        new_settings = market_data_mcp.config.settings
+        import stockhub_mcp.config
+        importlib.reload(stockhub_mcp.config)
+        new_settings = stockhub_mcp.config.settings
         self.assertEqual(new_settings.cache_max_size, 50)
         # Clean up
         del os.environ["CACHE_MAX_SIZE"]
