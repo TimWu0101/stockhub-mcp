@@ -39,7 +39,9 @@
 
 ## 数据源架构
 
-**6 数据源，自动降级，零配置：**
+**当前使用的数据源与默认角色：**
+
+> 并非所有工具都走相同 fallback 链路。
 
 ```
 efinance → 东方财富 → 腾讯 → 新浪 → yfinance → AkShare
@@ -58,6 +60,8 @@ efinance → 东方财富 → 腾讯 → 新浪 → yfinance → AkShare
 
 ## 快速开始
 
+### 使用者
+
 ```bash
 pip install stockhub-mcp
 
@@ -65,17 +69,24 @@ pip install stockhub-mcp
 pip install efinance
 ```
 
-### MCP 客户端配置
-
 ```json
 {
   "mcpServers": {
     "stockhub": {
       "command": "fastmcp",
-      "args": ["run", "stockhub_mcp.server:mcp"]
+      "args": ["run", "-m", "stockhub_mcp.server"]
     }
   }
 }
+```
+
+### 开发者
+
+```bash
+git clone https://github.com/TimWu0101/stockhub-mcp.git
+cd stockhub-mcp
+pip install -e .
+fastmcp run src/stockhub_mcp/server.py:mcp
 ```
 
 ---
@@ -135,6 +146,27 @@ pip install efinance
 ← 100 只上榜，净买入前 3：中钨高新 +6.39 亿、铂力特涨停、天和磁材+2.54 亿
    净卖出前 3：光迅科技 -0.97 亿、兆易创新、宁波华翔
 ```
+
+### Beta 对标大盘
+
+```
+→ 苹果相对标普500的Beta是多少
+
+← 年化波动 22.59% | Beta=0.89 | 夏普 1.78 | 最大回撤 -13.82%
+   波动略低于大盘，防御性特征明显
+```
+*纯本地计算，同一工具同时返回波动率/夏普/VaR/Beta*
+
+### 组合诊断
+
+```
+→ 分析下 AAPL TSLA NVDA MSFT GOOGL 这个组合
+
+← 5 只，分散度良好 | 组合波动 16.25% | 平均相关性 0.27
+   个股波动：TSLA 39.51% > NVDA 37.53% > MSFT 31.94% > GOOGL 29.71% > AAPL 23.63%
+   年化收益：GOOGL +41.41% > NVDA +38.17% > AAPL +20.26% > MSFT -45.48% > TSLA -29.78%
+```
+*一键组合诊断：集中度 + 组合波动 + 个股风险收益 + 平均相关性*
 
 ### 多市场统一查询
 

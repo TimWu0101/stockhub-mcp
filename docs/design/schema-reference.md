@@ -1,6 +1,6 @@
 # Schema 参考
 
-> 通用响应结构、字段、枚举、错误码速查。枚举/常量以代码 `stockhub_mcp/enums.py` 为准。
+> 通用响应结构、字段、枚举、错误码速查。枚举/常量以代码 `src/stockhub_mcp/enums.py` 为准。
 > 覆盖 43 工具（V0.1-V0.4），新增工具按此规范扩展。
 
 ---
@@ -204,16 +204,11 @@
 
 ### 3.4 数据源 `source`
 
-| 值 | 数据源 |
-|---|---|
-| `yfinance` | Yahoo Finance |
-| `efinance` | 东方财富 efinance SDK |
-| `tx` | 腾讯行情 |
-| `sina` | 新浪行情 |
-| `eastmoney` | 东方财富 |
-| `akshare` | AkShare |
-| `tushare` | Tushare（可选增强） |
-| `computed` | 本地计算（如技术指标） |
+当前代码真源以 `src/stockhub_mcp/enums.py` 的 `DataSource` 为准。文档层面只保留阅读提示：
+
+- 已覆盖 `yfinance`、`tx`、`sina`、`eastmoney`、`akshare`、`tushare`、`computed`
+- `meta.source`、source adapter、fallback 记录与源健康状态都应复用这一组枚举
+- 如果实现侧新增或移除数据源，应先修改 `enums.py`，再检查本文档与 `error-model.md`、`current-capabilities.md` 的描述是否仍一致
 
 ### 3.5 复权口径 `adjust`
 

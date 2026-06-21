@@ -3,4 +3,4 @@
 Covering US, CN, and HK markets with multi-source fallback and caching.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.4.1"

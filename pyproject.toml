@@ -1,15 +1,14 @@
 [project]
 name = "stockhub-mcp"
-version = "0.4.0"
+version = "0.4.1"
 description = "StockHub MCP — 43-tool financial market data server for A-shares, HK stocks, US equities, funds, ETFs, futures, indices. Multi-source fallback: yfinance, efinance, Tencent, Sina, EastMoney, AkShare."
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
 keywords = ["mcp", "stock", "finance", "trading", "quantitative", "A-share", "美股", "港股"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Financial and Insurance Industry",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",

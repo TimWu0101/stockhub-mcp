@@ -1,5 +1,7 @@
-# stockhub-mcp V0.1 系统设计文档
+# stockhub-mcp V0.1 历史系统设计稿（归档/参考）
 
+> 当前实现与目录结构以代码、README 和现行 tracking 文档为准。
+>
 > 架构师：Bob | 日期：2026-06-18 | 版本：V0.1
 
 ---
@@ -358,7 +360,7 @@ target-version = "py311"
 **验收标准：**
 - `python -c "from stockhub_mcp.config import settings; print(settings)"` 正常
 - `python -c "from stockhub_mcp.models.enums import Market; print(Market.CN)"` 正常
-- `fastmcp dev src/stockhub_mcp/server.py` 可启动，10 个工具可见
+- 开发态可用 `fastmcp run src/stockhub_mcp/server.py:mcp` 本地调试；安装态以包入口启动，不再将该命令写作发布态验收事实
 
 ---
 
@@ -497,7 +499,7 @@ target-version = "py311"
 - `search_symbol("茅台")` 返回贵州茅台搜索结果
 - `get_source_status()` 返回所有源状态
 - `get_trading_calendar("CN")` 返回 A 股交易日历
-- `fastmcp dev src/stockhub_mcp/server.py` 10 个工具全部可用且返回正确结构
+- 开发态可通过 `fastmcp run src/stockhub_mcp/server.py:mcp` 做本地联调；发布/安装态应以已安装包入口验证全部工具可用且返回正确结构
 - 端到端：AI 客户端连接后可完成"查茅台行情→看历史K线→算MACD→看板块资金流"完整闭环
 
 ---

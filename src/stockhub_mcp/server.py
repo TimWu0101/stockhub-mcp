@@ -1,6 +1,8 @@
 """FastMCP application entry-point for stockhub-mcp.
 
-Start with:  fastmcp dev src/stockhub_mcp/server.py
+Start with:
+- Development (run local source): `fastmcp run src/stockhub_mcp/server.py:mcp`
+- Installed package: `fastmcp run -m stockhub_mcp.server`
 """
 
 from __future__ import annotations
@@ -1099,3 +1101,7 @@ async def get_valuation_percentile(
     """
     from stockhub_mcp.tools.valuation_percentile import get_valuation_percentile_impl
     return await get_valuation_percentile_impl(symbol=symbol, metric=metric, market=market)
+
+
+if __name__ == "__main__":
+    mcp.run()

@@ -1,6 +1,10 @@
 # 借鉴与引用仓库清单
 
+> 归档说明：本文为方案讨论阶段的历史参考记录，保留当时语境中的“后续/规划”表述，不代表当前项目实时状态；当前事实以 `docs/tracking/development-status.md` 与现行工具清单为准。
+
 这份清单用于记录 `stockhub-mcp` 在方案讨论阶段明确借鉴、分析或参考过的 GitHub 仓库，方便后续继续查阅。
+
+如只想先看 archive 的收敛结论，建议优先阅读 [`README.md`](./README.md) 与 [`skills-to-stockhub-mapping.md`](./skills-to-stockhub-mapping.md)，本文主要保留外部参考来源清单。
 
 ## 1. mcp-yfinance-server
 

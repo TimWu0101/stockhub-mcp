@@ -1,5 +1,9 @@
 # stockhub-mcp 专家复核笔记
 
+> 本文是**历史阶段的设计评审记录 / 背景参考**，用于追溯当时的评审结论与方案补充，**不作为当前实现主入口**。
+>
+> 当前能力现状请看 `docs/tracking/current-capabilities.md`；当前 design 目录入口请看 `docs/design/README.md`。
+
 本文从股票研究、市场语义、数据一致性、AI 调用体验和工程稳定性角度，对 `stockhub-mcp` 当前方案进行二次复核，整理仍需补充、可前移和后续增强的关键点。
 
 ---
