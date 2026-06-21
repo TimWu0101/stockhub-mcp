@@ -39,9 +39,7 @@
 
 ## 数据源架构
 
-**当前使用的数据源与默认角色：**
-
-> 并非所有工具都走相同 fallback 链路。
+**6 数据源，自动降级，零配置：**
 
 ```
 efinance → 东方财富 → 腾讯 → 新浪 → yfinance → AkShare
@@ -60,7 +58,7 @@ efinance → 东方财富 → 腾讯 → 新浪 → yfinance → AkShare
 
 ## 快速开始
 
-### 使用者
+### 使用
 
 ```bash
 pip install stockhub-mcp
@@ -68,6 +66,8 @@ pip install stockhub-mcp
 # 可选：A 股龙虎榜/资金流更稳定
 pip install efinance
 ```
+
+### MCP 客户端配置
 
 ```json
 {
@@ -80,7 +80,7 @@ pip install efinance
 }
 ```
 
-### 开发者
+### 开发
 
 ```bash
 git clone https://github.com/TimWu0101/stockhub-mcp.git
